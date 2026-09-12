@@ -312,9 +312,8 @@ Seattle's underlying performance jumped by slightly *more* than the record
 shows — the team may have quietly left a little improvement on the table.
 """
     )
-    ecol1, ecol2 = st.columns(2)
-    ecol1.image(str(OUTPUTS / "decomposition_waterfall.png"), width="stretch")
-    ecol2.image(str(OUTPUTS / "decomposition_feature_importance.png"), width="stretch")
+    st.image(str(OUTPUTS / "decomposition_waterfall.png"), width="stretch")
+    st.image(str(OUTPUTS / "decomposition_feature_importance.png"), width="stretch")
 
     st.header("Season trend explorer")
     st.caption("SEA's weekly team features, 2024 vs. 2025 — from `team_week_features.csv`.")
@@ -649,9 +648,8 @@ On the clock-weighted version it ranks
         "same schedule with the same team quality shows how much a 17-game record can swing."
     )
 
-    ac1, ac2 = st.columns(2)
-    ac1.image(str(OUTPUTS / "counterfactual_record_distribution.png"), width="stretch")
-    ac2.image(str(OUTPUTS / "counterfactual_close_games.png"), width="stretch")
+    st.image(str(OUTPUTS / "counterfactual_record_distribution.png"), width="stretch")
+    st.image(str(OUTPUTS / "counterfactual_close_games.png"), width="stretch")
 
     st.markdown(
         f"""

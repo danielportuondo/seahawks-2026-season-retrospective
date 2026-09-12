@@ -81,6 +81,7 @@ from chart_style import (
     OFF_WHITE,
     WOLF_GREY,
     apply_scoreboard_style,
+    fig_size,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -294,7 +295,7 @@ def radar_chart(df: pd.DataFrame, path: Path) -> None:
     angles = np.linspace(0, 2 * np.pi, len(METRICS), endpoint=False).tolist()
     closed = angles + angles[:1]
 
-    fig, ax = plt.subplots(figsize=(7.5, 7), subplot_kw={"projection": "polar"})
+    fig, ax = plt.subplots(figsize=fig_size(6.2), subplot_kw={"projection": "polar"})
     for season, color in zip(FOCUS_SEASONS, [WOLF_GREY, ACTION_GREEN]):
         row = row_for(df, season)
         values = [row[z_col(m)] for m in METRICS]
@@ -314,33 +315,39 @@ def radar_chart(df: pd.DataFrame, path: Path) -> None:
         fontsize=12,
         pad=24,
     )
-    ax.legend(loc="upper right", bbox_to_anchor=(1.22, 1.12))
+    # A polar axes sizes its circle off the shorter dimension, so a wide figure
+    # leaves the flanks empty -- the legend belongs there, not over the plot.
+    ax.legend(loc="upper left", bbox_to_anchor=(-0.02, 1.02))
     fig.tight_layout()
     fig.savefig(path, dpi=150)
     plt.close(fig)
 
 
+# Panel titles are subordinate to the figure title and share one width three ways.
+PANEL_TITLE_PT = 11.5
+
+
 def historical_rank_chart(df: pd.DataFrame, path: Path) -> None:
     apply_scoreboard_style()
     sea24, sea25 = (row_for(df, s) for s in FOCUS_SEASONS)
-    fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+    fig, axes = plt.subplots(1, 3, figsize=fig_size(4.2))
 
     axes[0].hist(df["mahalanobis"], bins=40, color=WOLF_GREY, edgecolor=OFF_WHITE)
-    axes[0].set_title(f"Mahalanobis distance from average\n(all {len(df)} team-seasons, 2010-2025)")
+    axes[0].set_title(f"Mahalanobis distance\n({len(df)} team-seasons, 2010-2025)", fontsize=PANEL_TITLE_PT)
     axes[0].set_xlabel("Mahalanobis distance (unsigned)")
     axes[0].set_ylabel("Team-seasons")
 
     axes[1].hist(df["composite_z"], bins=40, color=WOLF_GREY, edgecolor=OFF_WHITE)
-    axes[1].set_title("Composite defensive z-score\n(mean of 4 signed z-scores)")
+    axes[1].set_title("Composite z-score\n(mean of 4 signed z-scores)", fontsize=PANEL_TITLE_PT)
     axes[1].set_xlabel("Composite z (higher = better defense)")
     axes[1].set_ylabel("Team-seasons")
 
     for ax, key in zip(axes[:2], ["mahalanobis", "composite_z"]):
-        for row, color, season in ((sea24, WOLF_GREY, 2024), (sea25, ACTION_GREEN, 2025)):
+        for row, color, season, y in ((sea24, WOLF_GREY, 2024, 0.84), (sea25, ACTION_GREEN, 2025, 0.64)):
             ax.axvline(row[key], color=color, linewidth=2)
             ax.annotate(
                 f"SEA {season}\n{row[key]:.2f}",
-                xy=(row[key], ax.get_ylim()[1] * 0.88),
+                xy=(row[key], ax.get_ylim()[1] * y),
                 xytext=(6, 0),
                 textcoords="offset points",
                 color=color,
@@ -367,12 +374,12 @@ def historical_rank_chart(df: pd.DataFrame, path: Path) -> None:
             fontweight="bold",
         )
     axes[2].axvline(0, color=OFF_WHITE, linewidth=0.8, linestyle="--")
-    axes[2].set_title("Distance is unsigned:\ngood and bad defenses both sit far out")
+    axes[2].set_title("Distance is unsigned\nboth extremes sit far out", fontsize=PANEL_TITLE_PT)
     axes[2].set_xlabel("Composite z (higher = better defense)")
     axes[2].set_ylabel("Mahalanobis distance")
     axes[2].legend(fontsize=8, loc="lower left")
 
-    fig.suptitle("How extreme was the 2025 Seahawks defense? (2010-2025 team-seasons)", fontsize=13)
+    fig.suptitle("How extreme was the 2025 Seahawks defense? (2010-2025 team-seasons)")
     fig.tight_layout()
     fig.savefig(path, dpi=150)
     plt.close(fig)

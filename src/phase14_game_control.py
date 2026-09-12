@@ -61,6 +61,7 @@ from chart_style import (
     OFF_WHITE,
     WOLF_GREY,
     apply_scoreboard_style,
+    fig_size,
 )
 from phase13_historical_baseline import super_bowl_champions
 from season_metrics import percentile_rank
@@ -205,7 +206,7 @@ def champions_chart(combined: pd.DataFrame, champs: pd.DataFrame, path: Path) ->
             for r in df.itertuples()
         ]
 
-    fig, axes = plt.subplots(1, 2, figsize=(13, 8), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=fig_size(6.8), sharey=True)
     axes[0].barh(labels, rows["avg_final_margin"], color=colors_for(rows))
     axes[0].set_xlabel("Average final margin (pts/game)")
     axes[0].set_title("The published statistic\nAverage end-of-game differential")
@@ -236,7 +237,7 @@ def season_arc_chart(control: pd.DataFrame, path: Path) -> None:
     ]
     colors = [ACTION_GREEN if v >= 0 else ALERT_RED for v in df["time_weighted_margin"]]
 
-    fig, ax = plt.subplots(figsize=(12, 5.5))
+    fig, ax = plt.subplots(figsize=fig_size(5.0))
     ax.bar(x, df["time_weighted_margin"], color=colors)
     ax.plot(x, df["final_margin"], color=OFF_WHITE, lw=1.4, marker="o", ms=4, label="Final margin")
     ax.axhline(0, color=OFF_WHITE, lw=0.8)

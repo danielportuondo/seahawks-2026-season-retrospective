@@ -99,6 +99,7 @@ from chart_style import (
     PANEL,
     WOLF_GREY,
     apply_scoreboard_style,
+    fig_size,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -419,7 +420,7 @@ def zero_turnover_probability(rate: float, exposure: float, alpha: float | None 
 
 def plot_rolling(rolling: pd.DataFrame, rates: dict, trend: dict, path: Path) -> None:
     apply_scoreboard_style()
-    fig, axes = plt.subplots(2, 1, figsize=(11, 8), sharex=True)
+    fig, axes = plt.subplots(2, 1, figsize=fig_size(7.0), sharex=True)
     x = rolling["game_no"]
     labels = [f"W{int(w)}" for w in rolling["week"]]
 
@@ -487,7 +488,7 @@ def plot_probability(lam: float, alpha: float, result: dict, exposure: dict, pat
     r = 1.0 / alpha
     pmf_nb = stats.nbinom.pmf(k, r, r / (r + lam))
 
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=fig_size(5.6))
     colors = [ACTION_GREEN] + [WOLF_GREY] * (len(k) - 1)
     bars = ax.bar(k, pmf, color=colors, edgecolor=OFF_WHITE, width=0.72,
                   label=f"Poisson(lambda = {lam:.2f}), fitted model")

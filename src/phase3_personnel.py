@@ -9,7 +9,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from chart_style import ACTION_GREEN, WOLF_GREY, apply_scoreboard_style
+from chart_style import ACTION_GREEN, WOLF_GREY, apply_scoreboard_style, fig_size
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW_DIR = ROOT / "data" / "raw"
@@ -73,7 +73,7 @@ def main() -> None:
         json.dump(combined, f, indent=2)
 
     apply_scoreboard_style()
-    fig, axes = plt.subplots(1, 3, figsize=(11, 4))
+    fig, axes = plt.subplots(1, 3, figsize=fig_size(4.0))
     seasons = list(combined.keys())
     labels = [f"{s}\n{combined[s]['qb']}" for s in seasons]
     season_colors = [WOLF_GREY, ACTION_GREEN]

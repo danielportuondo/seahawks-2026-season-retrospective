@@ -66,6 +66,7 @@ from chart_style import (
     OFF_WHITE,
     WOLF_GREY,
     apply_scoreboard_style,
+    fig_size,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -240,7 +241,7 @@ def feature_importance_chart(ols: dict, path: Path) -> None:
     labels = [FEATURE_LABELS[n] for n in names]
     colors = [ACTION_GREEN if c > 0 else ALERT_RED for c in coefs]
 
-    fig, ax = plt.subplots(figsize=(8, 5))
+    fig, ax = plt.subplots(figsize=fig_size(5.2))
     bars = ax.barh(labels, coefs, color=colors, edgecolor=OFF_WHITE)
     for bar, p in zip(bars, pvals):
         sig = "***" if p < 0.001 else "**" if p < 0.01 else "*" if p < 0.05 else "n.s."
@@ -271,7 +272,7 @@ def waterfall_chart(decomp: dict, path: Path) -> None:
         cum.append(cum[-1] + s)
     end = decomp["sea_point_diff_per_game_2025"]
 
-    fig, ax = plt.subplots(figsize=(11, 6))
+    fig, ax = plt.subplots(figsize=fig_size(5.8))
 
     # First bar: base value 2024
     ax.bar(0, start, color=WOLF_GREY)
@@ -289,7 +290,7 @@ def waterfall_chart(decomp: dict, path: Path) -> None:
     ax.text(len(labels) - 1, end + 0.15, f"{end:.2f}", ha="center", fontsize=9)
 
     ax.set_xticks(range(len(labels)))
-    ax.set_xticklabels(labels, rotation=30, ha="right", fontsize=8)
+    ax.set_xticklabels(labels, rotation=30, ha="right", fontsize=9)
     ax.set_ylabel("Point differential per game")
     ax.axhline(0, color=OFF_WHITE, lw=0.6)
     ax.set_title("Decomposing SEA's 2024→2025 point-differential jump\n"

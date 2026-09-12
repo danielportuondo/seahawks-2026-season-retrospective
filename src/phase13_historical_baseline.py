@@ -53,6 +53,7 @@ from chart_style import (
     OFF_WHITE,
     WOLF_GREY,
     apply_scoreboard_style,
+    fig_size,
 )
 from season_metrics import RELOCATION_MAP, percentile_rank
 
@@ -265,7 +266,7 @@ def scorecard_chart(scores: dict, path: Path) -> None:
     raw = [v["raw_percentile"] for _, v in items]
     era = [v["era_adjusted_percentile"] for _, v in items]
 
-    fig, ax = plt.subplots(figsize=(9.5, 7))
+    fig, ax = plt.subplots(figsize=fig_size(6.6))
     y = np.arange(len(labels))
 
     for yi, r, e in zip(y, raw, era):
@@ -297,7 +298,7 @@ def distribution_chart(reg: pd.DataFrame, scores: dict, path: Path) -> None:
         "points_per_drive_allowed",
         "def_explosive_rate_allowed",
     ]
-    fig, axes = plt.subplots(2, 3, figsize=(13, 7))
+    fig, axes = plt.subplots(2, 3, figsize=fig_size(6.0))
     for ax, metric in zip(axes.ravel(), picks):
         vals = reg[metric].dropna()
         sea_val = scores[metric]["sea_2025_value"]
@@ -332,7 +333,7 @@ def champion_chart(reg: pd.DataFrame, champs: pd.DataFrame, path: Path) -> None:
         for r in champ_rows.itertuples()
     ]
 
-    fig, ax = plt.subplots(figsize=(8, 9))
+    fig, ax = plt.subplots(figsize=fig_size(7.4))
     ax.barh(labels, vals, color=colors)
     ax.set_xlabel("Regular-season point differential per game")
     ax.set_title("Every Super Bowl champion since 1999, by regular-season margin")

@@ -64,6 +64,7 @@ from chart_style import (
     OFF_WHITE,
     WOLF_GREY,
     apply_scoreboard_style,
+    fig_size,
 )
 from pythagorean import NFL_EXPONENT, expected_wins
 from season_metrics import RELOCATION_MAP
@@ -229,7 +230,7 @@ def record_distribution_chart(sim_wins: np.ndarray, path: Path) -> None:
     pct = 100 * counts / counts.sum()
     colors = [ACTION_GREEN if w == GROUND_TRUTH_WINS else WOLF_GREY for w in counts.index]
 
-    fig, ax = plt.subplots(figsize=(10, 5.5))
+    fig, ax = plt.subplots(figsize=fig_size(5.4))
     ax.bar(counts.index, pct, color=colors, width=0.75)
     ax.axvline(np.mean(sim_wins), color=AMBER, ls="--", lw=1.6,
                label=f"Simulated mean {np.mean(sim_wins):.1f} wins")
@@ -252,7 +253,7 @@ def close_games_chart(sched: pd.DataFrame, path: Path) -> None:
     df = sched.sort_values("week")
     colors = [ACTION_GREEN if m > 0 else ALERT_RED for m in df["margin"]]
 
-    fig, ax = plt.subplots(figsize=(12, 5))
+    fig, ax = plt.subplots(figsize=fig_size(4.6))
     bars = ax.bar(df["week"], df["margin"], color=colors)
     ax.axhspan(-8, 8, color=AMBER, alpha=0.12, zorder=0)
     ax.axhline(0, color=OFF_WHITE, lw=0.9)

@@ -54,6 +54,7 @@ from chart_style import (
     OFF_WHITE,
     WOLF_GREY,
     apply_scoreboard_style,
+    fig_size,
 )
 from phase13_historical_baseline import rank_in_good_direction
 from season_metrics import percentile_rank, rolling_window_best
@@ -181,7 +182,7 @@ def supporting_metrics(reg: pd.DataFrame) -> dict:
 def rolling_chart(games: pd.DataFrame, metric: str, path: Path) -> None:
     """SEA 2025's rolling window against the full 1999-2025 cloud."""
     apply_scoreboard_style()
-    fig, ax = plt.subplots(figsize=(11, 6))
+    fig, ax = plt.subplots(figsize=fig_size(5.8))
 
     for (season, team), g in games.groupby(["season", "team"], sort=False):
         if season == FOCUS_SEASON and team == FOCUS_TEAM:
@@ -232,7 +233,7 @@ def drive_efficiency_chart(metrics: dict, path: Path) -> None:
     pcts = [b for _, b in items]
     colors = [ACTION_GREEN if p >= 90 else AMBER if p >= 70 else WOLF_GREY for p in pcts]
 
-    fig, ax = plt.subplots(figsize=(9, 5.5))
+    fig, ax = plt.subplots(figsize=fig_size(5.4))
     bars = ax.barh(labels, pcts, color=colors)
     for bar, p in zip(bars, pcts):
         ax.text(p + 1, bar.get_y() + bar.get_height() / 2, f"{p:.0f}", va="center", fontsize=8)

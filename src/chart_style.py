@@ -22,9 +22,28 @@ GRID = "#1C2C48"
 # WOLF_GREY = 2024 / baseline, ALERT_RED = negative, AMBER = secondary warning.
 CATEGORICAL = [ACTION_GREEN, WOLF_GREY, ACCENT_BLUE, AMBER]
 
+# Every PNG is displayed at one fixed on-page width, so a figure's apparent type
+# size is its point size divided by its width in inches -- not its point size.
+# Authoring every figure at the same width is what makes a `fontsize=9` label
+# mean the same thing in all 17 charts; heights vary freely.
+FIG_WIDTH = 11.0
+
+
+def fig_size(height: float) -> tuple[float, float]:
+    return (FIG_WIDTH, height)
+
 
 def apply_scoreboard_style() -> None:
     plt.rcParams.update({
+        # Tuned so a FIG_WIDTH figure renders type at roughly the dashboard's
+        # own scale: titles just under a section heading, ticks under body copy.
+        "font.size": 10,
+        "axes.titlesize": 13.5,
+        "axes.labelsize": 11,
+        "xtick.labelsize": 9.5,
+        "ytick.labelsize": 9.5,
+        "legend.fontsize": 10,
+        "figure.titlesize": 15,
         "figure.facecolor": NAVY,
         "savefig.facecolor": NAVY,
         "axes.facecolor": PANEL,
