@@ -91,6 +91,16 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from scipy import optimize, special, stats
 
+from chart_style import (
+    ACTION_GREEN,
+    ALERT_RED,
+    AMBER,
+    OFF_WHITE,
+    PANEL,
+    WOLF_GREY,
+    apply_scoreboard_style,
+)
+
 ROOT = Path(__file__).resolve().parent.parent
 RAW_DIR = ROOT / "data" / "raw"
 OUT_DIR = ROOT / "outputs"
@@ -408,15 +418,16 @@ def zero_turnover_probability(rate: float, exposure: float, alpha: float | None 
 
 
 def plot_rolling(rolling: pd.DataFrame, rates: dict, trend: dict, path: Path) -> None:
+    apply_scoreboard_style()
     fig, axes = plt.subplots(2, 1, figsize=(11, 8), sharex=True)
     x = rolling["game_no"]
     labels = [f"W{int(w)}" for w in rolling["week"]]
 
     ax = axes[0]
-    ax.bar(x, rolling["interceptions"], color="#c0392b", label="interceptions")
+    ax.bar(x, rolling["interceptions"], color=ALERT_RED, label="interceptions")
     ax.bar(x, rolling["fumbles_lost"], bottom=rolling["interceptions"],
-           color="#e59866", label="lost fumbles")
-    ax.axhline(rates["turnovers_per_game"], color="black", ls="--", lw=1.2,
+           color=AMBER, label="lost fumbles")
+    ax.axhline(rates["turnovers_per_game"], color=OFF_WHITE, ls="--", lw=1.2,
                label=f"season mean = {rates['turnovers_per_game']:.2f}/game")
     ax.set_ylabel("Turnovers")
     ax.set_yticks(range(int(rolling["turnovers"].max()) + 2))
@@ -426,25 +437,25 @@ def plot_rolling(rolling: pd.DataFrame, rates: dict, trend: dict, path: Path) ->
     ax.grid(axis="y", alpha=0.25)
 
     ax = axes[1]
-    ax.plot(x, 100 * rolling["rolling_rate_per_dropback"], "o-", color="#c0392b",
+    ax.plot(x, 100 * rolling["rolling_rate_per_dropback"], "o-", color=ALERT_RED,
             lw=2, label=f"trailing {ROLL_WINDOW}-game rate (exposure-weighted)")
-    ax.plot(x, 100 * rolling["cumulative_rate_per_dropback"], "s--", color="#2c7fb8",
+    ax.plot(x, 100 * rolling["cumulative_rate_per_dropback"], "s--", color=WOLF_GREY,
             lw=1.6, ms=4, alpha=0.9, label="cumulative to date")
-    ax.axhline(100 * rates["turnover_rate_per_dropback"], color="black", ls=":", lw=1.2,
+    ax.axhline(100 * rates["turnover_rate_per_dropback"], color=OFF_WHITE, ls=":", lw=1.2,
                label=f"full season = {100 * rates['turnover_rate_per_dropback']:.2f}%")
 
     half = len(rolling) // 2
-    ax.hlines(100 * trend["first_half_rate_per_dropback"], 1, half, color="#2ca02c",
+    ax.hlines(100 * trend["first_half_rate_per_dropback"], 1, half, color=ACTION_GREEN,
               lw=3, alpha=0.55)
     ax.hlines(100 * trend["second_half_rate_per_dropback"], half + 1, len(rolling),
-              color="#8e44ad", lw=3, alpha=0.55)
+              color=AMBER, lw=3, alpha=0.55)
     ax.text(2.2, 100 * trend["first_half_rate_per_dropback"] + 0.3,
             f"games 1-{half}: {100 * trend['first_half_rate_per_dropback']:.2f}%",
-            color="#1e7a1e", fontsize=9, ha="center", fontweight="bold")
+            color=ACTION_GREEN, fontsize=9, ha="center", fontweight="bold")
     ax.text(len(rolling) - 1.5, 100 * trend["second_half_rate_per_dropback"] + 1.0,
             f"games {half + 1}-{len(rolling)}: "
             f"{100 * trend['second_half_rate_per_dropback']:.2f}%",
-            color="#8e44ad", fontsize=9, ha="center", fontweight="bold")
+            color=AMBER, fontsize=9, ha="center", fontweight="bold")
 
     verdict = ("NARRATIVE NOT SUPPORTED" if not trend["narrative_supported"]
                else "narrative supported")
@@ -453,8 +464,8 @@ def plot_rolling(rolling: pd.DataFrame, rates: dict, trend: dict, path: Path) ->
             f"Poisson trend slope p = {trend['p_value_trend']:.2f}  |  "
             f"half-split p = {trend['p_value_half_split']:.2f}\n"
             f"Point estimate runs the other way ({trend['direction']}).",
-            transform=ax.transAxes, ha="right", va="top", fontsize=9,
-            bbox={"boxstyle": "round", "fc": "#fdf2e9", "ec": "#c0392b", "alpha": 0.95})
+            transform=ax.transAxes, ha="right", va="top", fontsize=9, color=OFF_WHITE,
+            bbox={"boxstyle": "round", "fc": PANEL, "ec": ALERT_RED, "alpha": 0.95})
 
     ax.set_xticks(x)
     ax.set_xticklabels(labels, fontsize=8)
@@ -470,36 +481,37 @@ def plot_rolling(rolling: pd.DataFrame, rates: dict, trend: dict, path: Path) ->
 
 
 def plot_probability(lam: float, alpha: float, result: dict, exposure: dict, path: Path) -> None:
+    apply_scoreboard_style()
     k = np.arange(0, 11)
     pmf = stats.poisson.pmf(k, lam)
     r = 1.0 / alpha
     pmf_nb = stats.nbinom.pmf(k, r, r / (r + lam))
 
     fig, ax = plt.subplots(figsize=(10, 6))
-    colors = ["#c0392b"] + ["#9fbfd6"] * (len(k) - 1)
-    bars = ax.bar(k, pmf, color=colors, edgecolor="white", width=0.72,
+    colors = [ACTION_GREEN] + [WOLF_GREY] * (len(k) - 1)
+    bars = ax.bar(k, pmf, color=colors, edgecolor=OFF_WHITE, width=0.72,
                   label=f"Poisson(lambda = {lam:.2f}), fitted model")
-    ax.plot(k, pmf_nb, "k^--", ms=5, lw=1.1, alpha=0.65,
+    ax.plot(k, pmf_nb, "^--", color=OFF_WHITE, ms=5, lw=1.1, alpha=0.65,
             label=f"NB2 (alpha = {alpha:.3f}), conservative bound")
 
     ax.set_ylim(0, max(pmf.max(), pmf_nb.max()) * 1.42)
-    ax.axvline(lam, color="black", ls=":", lw=1.3)
+    ax.axvline(lam, color=OFF_WHITE, ls=":", lw=1.3)
     ax.text(lam, ax.get_ylim()[1] * 0.985, f" expected = {lam:.2f}", fontsize=9,
             va="top", ha="left", style="italic")
 
     for bar, p in zip(bars, pmf):
         ax.text(bar.get_x() + bar.get_width() / 2, p + ax.get_ylim()[1] * 0.018,
-                f"{100 * p:.1f}%", ha="center", fontsize=8, color="#555555")
+                f"{100 * p:.1f}%", ha="center", fontsize=8, color=WOLF_GREY)
 
     ax.annotate(
         f"ACTUAL: 0 turnovers\nP = {100 * result['p_zero_poisson']:.2f}%  "
         f"(~1 in {result['odds_against_1_in']:.0f})\n"
         f"NB2 bound: {100 * result['p_zero_negative_binomial']:.2f}%",
         xy=(0.34, pmf[0] * 1.05), xytext=(1.15, ax.get_ylim()[1] * 0.44),
-        arrowprops={"arrowstyle": "->", "color": "#c0392b", "lw": 1.8,
+        arrowprops={"arrowstyle": "->", "color": ACTION_GREEN, "lw": 1.8,
                     "connectionstyle": "arc3,rad=0.25"},
-        fontsize=11, color="#7b241c", fontweight="bold", va="center",
-        bbox={"boxstyle": "round", "fc": "#fdedec", "ec": "#c0392b"},
+        fontsize=11, color=OFF_WHITE, fontweight="bold", va="center",
+        bbox={"boxstyle": "round", "fc": PANEL, "ec": ACTION_GREEN},
     )
 
     ax.set_xticks(k)

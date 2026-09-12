@@ -75,6 +75,14 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest
 
+from chart_style import (
+    ACTION_GREEN,
+    ALERT_RED,
+    OFF_WHITE,
+    WOLF_GREY,
+    apply_scoreboard_style,
+)
+
 ROOT = Path(__file__).resolve().parent.parent
 RAW_DIR = ROOT / "data" / "raw"
 OUT_DIR = ROOT / "outputs"
@@ -282,18 +290,19 @@ def row_for(df: pd.DataFrame, season: int, team: str = FOCUS_TEAM) -> pd.Series:
 
 
 def radar_chart(df: pd.DataFrame, path: Path) -> None:
+    apply_scoreboard_style()
     angles = np.linspace(0, 2 * np.pi, len(METRICS), endpoint=False).tolist()
     closed = angles + angles[:1]
 
     fig, ax = plt.subplots(figsize=(7.5, 7), subplot_kw={"projection": "polar"})
-    for season, color in zip(FOCUS_SEASONS, ["#1f77b4", "#2ca02c"]):
+    for season, color in zip(FOCUS_SEASONS, [WOLF_GREY, ACTION_GREEN]):
         row = row_for(df, season)
         values = [row[z_col(m)] for m in METRICS]
         values += values[:1]
         ax.plot(closed, values, color=color, linewidth=2, label=f"SEA {season}")
         ax.fill(closed, values, color=color, alpha=0.18)
 
-    ax.plot(closed, [0] * len(closed), color="grey", linewidth=1, linestyle="--")
+    ax.plot(closed, [0] * len(closed), color=WOLF_GREY, linewidth=1, linestyle="--")
     ax.set_xticks(angles)
     ax.set_xticklabels([METRIC_LABELS[m] for m in METRICS], fontsize=9)
     ax.set_ylim(-2.5, 3.5)
@@ -312,21 +321,22 @@ def radar_chart(df: pd.DataFrame, path: Path) -> None:
 
 
 def historical_rank_chart(df: pd.DataFrame, path: Path) -> None:
+    apply_scoreboard_style()
     sea24, sea25 = (row_for(df, s) for s in FOCUS_SEASONS)
     fig, axes = plt.subplots(1, 3, figsize=(16, 5))
 
-    axes[0].hist(df["mahalanobis"], bins=40, color="#bbbbbb", edgecolor="white")
+    axes[0].hist(df["mahalanobis"], bins=40, color=WOLF_GREY, edgecolor=OFF_WHITE)
     axes[0].set_title(f"Mahalanobis distance from average\n(all {len(df)} team-seasons, 2010-2025)")
     axes[0].set_xlabel("Mahalanobis distance (unsigned)")
     axes[0].set_ylabel("Team-seasons")
 
-    axes[1].hist(df["composite_z"], bins=40, color="#bbbbbb", edgecolor="white")
+    axes[1].hist(df["composite_z"], bins=40, color=WOLF_GREY, edgecolor=OFF_WHITE)
     axes[1].set_title("Composite defensive z-score\n(mean of 4 signed z-scores)")
     axes[1].set_xlabel("Composite z (higher = better defense)")
     axes[1].set_ylabel("Team-seasons")
 
     for ax, key in zip(axes[:2], ["mahalanobis", "composite_z"]):
-        for row, color, season in ((sea24, "#1f77b4", 2024), (sea25, "#2ca02c", 2025)):
+        for row, color, season in ((sea24, WOLF_GREY, 2024), (sea25, ACTION_GREEN, 2025)):
             ax.axvline(row[key], color=color, linewidth=2)
             ax.annotate(
                 f"SEA {season}\n{row[key]:.2f}",
@@ -340,13 +350,13 @@ def historical_rank_chart(df: pd.DataFrame, path: Path) -> None:
 
     good = df["good_direction"]
     axes[2].scatter(
-        df.loc[~good, "composite_z"], df.loc[~good, "mahalanobis"], s=12, color="#d62728", alpha=0.35, label="Bad-direction outliers"
+        df.loc[~good, "composite_z"], df.loc[~good, "mahalanobis"], s=12, color=ALERT_RED, alpha=0.35, label="Bad-direction outliers"
     )
     axes[2].scatter(
-        df.loc[good, "composite_z"], df.loc[good, "mahalanobis"], s=12, color="#7f7f7f", alpha=0.45, label="Good-direction"
+        df.loc[good, "composite_z"], df.loc[good, "mahalanobis"], s=12, color=WOLF_GREY, alpha=0.45, label="Good-direction"
     )
-    for row, color, season in ((sea24, "#1f77b4", 2024), (sea25, "#2ca02c", 2025)):
-        axes[2].scatter(row["composite_z"], row["mahalanobis"], s=140, color=color, edgecolor="black", zorder=5)
+    for row, color, season in ((sea24, WOLF_GREY, 2024), (sea25, ACTION_GREEN, 2025)):
+        axes[2].scatter(row["composite_z"], row["mahalanobis"], s=140, color=color, edgecolor=OFF_WHITE, zorder=5)
         axes[2].annotate(
             f"SEA {season}",
             xy=(row["composite_z"], row["mahalanobis"]),
@@ -356,7 +366,7 @@ def historical_rank_chart(df: pd.DataFrame, path: Path) -> None:
             fontsize=10,
             fontweight="bold",
         )
-    axes[2].axvline(0, color="black", linewidth=0.8, linestyle="--")
+    axes[2].axvline(0, color=OFF_WHITE, linewidth=0.8, linestyle="--")
     axes[2].set_title("Distance is unsigned:\ngood and bad defenses both sit far out")
     axes[2].set_xlabel("Composite z (higher = better defense)")
     axes[2].set_ylabel("Mahalanobis distance")

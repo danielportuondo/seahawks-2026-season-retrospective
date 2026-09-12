@@ -9,6 +9,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from chart_style import ACTION_GREEN, WOLF_GREY, apply_scoreboard_style
+
 ROOT = Path(__file__).resolve().parent.parent
 RAW_DIR = ROOT / "data" / "raw"
 OUT_DIR = ROOT / "outputs"
@@ -70,17 +72,19 @@ def main() -> None:
     with open(OUT_DIR / "personnel_scheme_results.json", "w") as f:
         json.dump(combined, f, indent=2)
 
+    apply_scoreboard_style()
     fig, axes = plt.subplots(1, 3, figsize=(11, 4))
     seasons = list(combined.keys())
     labels = [f"{s}\n{combined[s]['qb']}" for s in seasons]
+    season_colors = [WOLF_GREY, ACTION_GREEN]
 
-    axes[0].bar(labels, [combined[s]["completion_pct"] for s in seasons], color=["#1f77b4", "#2ca02c"])
+    axes[0].bar(labels, [combined[s]["completion_pct"] for s in seasons], color=season_colors)
     axes[0].set_title("Completion %")
 
-    axes[1].bar(labels, [combined[s]["int_rate_pct"] for s in seasons], color=["#1f77b4", "#2ca02c"])
+    axes[1].bar(labels, [combined[s]["int_rate_pct"] for s in seasons], color=season_colors)
     axes[1].set_title("INT rate (%)")
 
-    axes[2].bar(labels, [combined[s]["pressure_rate_pct"] for s in seasons], color=["#1f77b4", "#2ca02c"])
+    axes[2].bar(labels, [combined[s]["pressure_rate_pct"] for s in seasons], color=season_colors)
     axes[2].set_title("Pressure rate allowed (%)")
 
     fig.suptitle("Seahawks Offense: 2024 vs 2025")

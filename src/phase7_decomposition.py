@@ -60,6 +60,14 @@ import pandas as pd
 from scipy import stats
 from sklearn.linear_model import LinearRegression
 
+from chart_style import (
+    ACTION_GREEN,
+    ALERT_RED,
+    OFF_WHITE,
+    WOLF_GREY,
+    apply_scoreboard_style,
+)
+
 ROOT = Path(__file__).resolve().parent.parent
 RAW_DIR = ROOT / "data" / "raw"
 PROCESSED_DIR = ROOT / "data" / "processed"
@@ -221,6 +229,7 @@ def decompose_sea_change(df: pd.DataFrame, ols: dict, z_cols: list[str]) -> dict
 
 
 def feature_importance_chart(ols: dict, path: Path) -> None:
+    apply_scoreboard_style()
     names = [f for f in FEATURES]
     coefs = [ols["coefficients"][f] for f in names]
     pvals = [ols["p_values"][f] for f in names]
@@ -229,10 +238,10 @@ def feature_importance_chart(ols: dict, path: Path) -> None:
     coefs = [coefs[i] for i in order]
     pvals = [pvals[i] for i in order]
     labels = [FEATURE_LABELS[n] for n in names]
-    colors = ["#2ca02c" if c > 0 else "#c0392b" for c in coefs]
+    colors = [ACTION_GREEN if c > 0 else ALERT_RED for c in coefs]
 
     fig, ax = plt.subplots(figsize=(8, 5))
-    bars = ax.barh(labels, coefs, color=colors, edgecolor="white")
+    bars = ax.barh(labels, coefs, color=colors, edgecolor=OFF_WHITE)
     for bar, p in zip(bars, pvals):
         sig = "***" if p < 0.001 else "**" if p < 0.01 else "*" if p < 0.05 else "n.s."
         x = bar.get_width()
@@ -240,7 +249,7 @@ def feature_importance_chart(ols: dict, path: Path) -> None:
                 bar.get_y() + bar.get_height() / 2, sig,
                 va="center", ha="left" if x >= 0 else "right", fontsize=9)
 
-    ax.axvline(0, color="black", lw=0.8)
+    ax.axvline(0, color=OFF_WHITE, lw=0.8)
     ax.set_xlabel("Standardized OLS coefficient (points/game per 1 SD of feature)")
     ax.set_title(f"What predicts point differential across the NFL?\n"
                  f"({ols['n']} team-seasons, 2024-2025; R²={ols['r2']:.3f})")
@@ -251,6 +260,7 @@ def feature_importance_chart(ols: dict, path: Path) -> None:
 
 
 def waterfall_chart(decomp: dict, path: Path) -> None:
+    apply_scoreboard_style()
     order = sorted(decomp["per_feature"].items(), key=lambda kv: -abs(kv[1]["contribution_to_point_diff_change"]))
     labels = ["SEA 2024\npoint diff/gm"] + [FEATURE_LABELS[k] for k, _ in order] + ["Residual\n(unexplained)", "SEA 2025\npoint diff/gm"]
     start = decomp["sea_point_diff_per_game_2024"]
@@ -264,24 +274,24 @@ def waterfall_chart(decomp: dict, path: Path) -> None:
     fig, ax = plt.subplots(figsize=(11, 6))
 
     # First bar: base value 2024
-    ax.bar(0, start, color="#7f7f7f")
+    ax.bar(0, start, color=WOLF_GREY)
     ax.text(0, start + 0.15, f"{start:.2f}", ha="center", fontsize=9)
 
     for i, s in enumerate(steps, start=1):
         bottom = cum[i - 1]
-        color = "#2ca02c" if s >= 0 else "#c0392b"
+        color = ACTION_GREEN if s >= 0 else ALERT_RED
         ax.bar(i, s, bottom=bottom, color=color)
         y = bottom + s + (0.15 if s >= 0 else -0.25)
         ax.text(i, y, f"{s:+.2f}", ha="center", fontsize=9)
 
     # Last bar: actual 2025
-    ax.bar(len(labels) - 1, end, color="#1f77b4")
+    ax.bar(len(labels) - 1, end, color=ACTION_GREEN)
     ax.text(len(labels) - 1, end + 0.15, f"{end:.2f}", ha="center", fontsize=9)
 
     ax.set_xticks(range(len(labels)))
     ax.set_xticklabels(labels, rotation=30, ha="right", fontsize=8)
     ax.set_ylabel("Point differential per game")
-    ax.axhline(0, color="black", lw=0.6)
+    ax.axhline(0, color=OFF_WHITE, lw=0.6)
     ax.set_title("Decomposing SEA's 2024→2025 point-differential jump\n"
                  "(contribution = standardized OLS coefficient × change in that feature's z-score)")
     ax.grid(axis="y", alpha=0.25)

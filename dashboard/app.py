@@ -25,6 +25,49 @@ st.set_page_config(
     layout="wide",
 )
 
+st.markdown(
+    """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+
+html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+
+.hero-band {
+    background: radial-gradient(ellipse 800px 260px at 15% 0%, rgba(105,190,40,.20), transparent 65%), #0F1E38;
+    padding: 1.8rem 1.8rem 1.5rem;
+    border-bottom: 4px solid #69BE28;
+    margin-bottom: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.hero-band svg { width: 56px; height: 56px; flex-shrink: 0; }
+.hero-band h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 2rem;
+    color: #F5F6F7;
+    margin: 0 0 4px;
+    line-height: 1.1;
+}
+.hero-band p { color: #A5ACAF; margin: 0; font-size: 0.98rem; }
+
+[data-testid="stMetric"] {
+    background: #0F1E38;
+    border-bottom: 4px solid #69BE28;
+    padding: 14px 14px 10px;
+}
+[data-testid="stMetricValue"] { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; }
+[data-testid="stMetricLabel"] { color: #A5ACAF; }
+
+hr { height: 4px !important; background-color: #69BE28 !important; border: none !important; opacity: 1 !important; }
+
+h1, h2, h3 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; }
+</style>
+""",
+    unsafe_allow_html=True,
+)
+
 
 @st.cache_data
 def load_json(name: str) -> dict:
@@ -53,10 +96,19 @@ METRIC_OPTIONS = {
     "Pressure rate created (higher = better)": "pressure_rate_created",
 }
 
-st.title("\U0001f985 From missing the playoffs to Super Bowl champions")
-st.caption(
-    "A statistical retrospective on the 2024→2025 Seattle Seahawks — "
-    "Super Bowl LX champions"
+st.markdown(
+    """
+<div class="hero-band">
+  <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="32,4 52,28 40,26 56,58 32,38 8,58 24,26 12,28" fill="#69BE28" stroke="#0B162A" stroke-width="1.5"/>
+  </svg>
+  <div>
+    <h1>From missing the playoffs to Super Bowl champions</h1>
+    <p>A statistical retrospective on the 2024→2025 Seattle Seahawks — Super Bowl LX champions</p>
+  </div>
+</div>
+""",
+    unsafe_allow_html=True,
 )
 
 tab_story, tab_method = st.tabs(["The Story", "Methodology"])
@@ -161,7 +213,9 @@ defensive efficiency (per play). Applying that relationship to Seattle
 specifically, the improved offense and improved defense together account for
 essentially the *entire* jump in Seattle's scoring margin from 2024 to 2025.
 Turnover luck, red-zone execution, and pass rush played only minor,
-statistically inconclusive roles by comparison.
+statistically inconclusive roles by comparison. If anything, the model says
+Seattle's underlying performance jumped by slightly *more* than the record
+shows — the team may have quietly left a little improvement on the table.
 """
     )
     ecol1, ecol2 = st.columns(2)
@@ -181,8 +235,17 @@ statistically inconclusive roles by comparison.
         color="season",
         markers=True,
         labels={"week": "Week", metric_col: metric_label, "season": "Season"},
+        color_discrete_map={"2024": "#A5ACAF", "2025": "#69BE28"},
     )
-    fig.update_layout(hovermode="x unified", legend_title_text="Season")
+    fig.update_layout(
+        hovermode="x unified",
+        legend_title_text="Season",
+        plot_bgcolor="#0F1E38",
+        paper_bgcolor="#0F1E38",
+        font_color="#F5F6F7",
+    )
+    fig.update_xaxes(gridcolor="#1C2C48")
+    fig.update_yaxes(gridcolor="#1C2C48")
     st.plotly_chart(fig, width="stretch")
 
     st.header("The honest caveats")
@@ -269,6 +332,11 @@ allowed, sack rate, takeaways/drive, points allowed/game), z-scored **within
 each season** before pooling across years, signs oriented so higher = better
 defense. Mahalanobis distance and an Isolation Forest were run as
 cross-checks on top of the composite z-score.
+
+Both cross-checks agree with the headline number: the 2025 defense ranks
+**129th of 261** good-direction team-seasons by Mahalanobis distance, and
+sits at the **65.8th percentile** on the Isolation Forest anomaly score —
+elite, but not off-the-charts by either measure.
 """
     )
     m1, m2 = st.columns(2)
@@ -290,6 +358,12 @@ Regular-season rate: **{turnover["season_turnovers"]}** turnovers over
 {turnover["drives"]} drives ({turnover["turnover_rate_per_drive"]:.2%}).
 Distribution choice: **{turnover["distribution"]["chosen_distribution"]}**
 ({turnover["distribution"]["reason"]})
+
+Playoff exposure is sized from Darnold's own regular-season pace: an
+estimated **{turnover["playoff_exposure_derived"]["dropbacks"]:.0f}** dropbacks
+over 3 games. He actually saw **{turnover["playoff_actual"]["dropbacks"]}** —
+higher than his own average, which makes the zero-turnover run *more*
+surprising, not less.
 """
     )
     r1, r2, r3 = st.columns(3)

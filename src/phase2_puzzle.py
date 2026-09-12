@@ -8,6 +8,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from chart_style import ACTION_GREEN, WOLF_GREY, apply_scoreboard_style
 from pythagorean import expected_wins, pythagorean_win_pct
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -58,11 +59,12 @@ def main() -> None:
     actual = [results[s]["actual_wins"] for s in seasons]
     expected = [results[s]["pythagorean_expected_wins"] for s in seasons]
 
+    apply_scoreboard_style()
     x = range(len(seasons))
     width = 0.35
     fig, ax = plt.subplots(figsize=(6, 4))
-    ax.bar([i - width / 2 for i in x], actual, width, label="Actual wins")
-    ax.bar([i + width / 2 for i in x], expected, width, label="Pythagorean expected wins")
+    ax.bar([i - width / 2 for i in x], actual, width, label="Actual wins", color=ACTION_GREEN)
+    ax.bar([i + width / 2 for i in x], expected, width, label="Pythagorean expected wins", color=WOLF_GREY)
     ax.set_xticks(list(x))
     ax.set_xticklabels([str(s) for s in seasons])
     ax.set_ylabel("Wins")
