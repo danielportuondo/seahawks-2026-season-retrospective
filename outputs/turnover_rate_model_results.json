@@ -1,0 +1,315 @@
+{
+  "framing": {
+    "model_class": "discrete rate model (count of events over bounded trials)",
+    "not_extreme_value_theory": "This is explicitly NOT an extreme value theory problem. EVT models the tail of a CONTINUOUS magnitude distribution (e.g. the largest single-game passing yardage ever expected). Here we are counting a small number of discrete events over a bounded number of trials, so the correct tool is a count distribution (Poisson / negative binomial) fit to an observed rate. The outcome of interest is the count k = 0, which has no magnitude tail to model."
+  },
+  "ground_truth_check": {
+    "season_total_file": {
+      "interceptions": 14,
+      "sack_fumbles_lost": 5,
+      "rushing_fumbles_lost": 1,
+      "fumbles_lost": 6,
+      "turnovers": 20,
+      "games": 17
+    },
+    "weekly_derived": {
+      "interceptions": 14,
+      "fumbles_lost": 6,
+      "turnovers": 20,
+      "games": 17
+    },
+    "match": true
+  },
+  "season_turnovers": 20,
+  "dropbacks": 516,
+  "drives": 193,
+  "dropback_reconciliation": {
+    "passer_rows": 506,
+    "passer_rows_that_are_dropbacks": 502,
+    "qb_spikes_excluded": 4,
+    "scrambles_added": 14,
+    "qb_dropbacks_modelled": 516,
+    "note": "passer_player_name == 'S.Darnold' matches 506 REG rows, but 4 are qb_spikes (qb_dropback == 0). Scrambles are dropbacks with a null passer and Darnold as rusher. 502 passer dropbacks + 14 scrambles = 516 true qb_dropbacks, which is the denominator used here."
+  },
+  "turnover_rate_per_dropback": 0.03875968992248062,
+  "turnover_rate_per_drive": 0.10362694300518134,
+  "season_rates": {
+    "games": 17,
+    "turnovers": 20,
+    "interceptions": 14,
+    "fumbles_lost": 6,
+    "dropbacks": 516,
+    "drives": 193,
+    "turnover_rate_per_dropback": 0.03875968992248062,
+    "turnover_rate_per_drive": 0.10362694300518134,
+    "turnovers_per_game": 1.1764705882352942,
+    "dropbacks_per_game": 30.352941176470587,
+    "drives_per_game": 11.352941176470589
+  },
+  "weekly": [
+    {
+      "week": 1,
+      "dropbacks": 24,
+      "interceptions": 0,
+      "fumbles_lost": 1,
+      "drives": 10,
+      "turnovers": 1,
+      "game_no": 1
+    },
+    {
+      "week": 2,
+      "dropbacks": 35,
+      "interceptions": 2,
+      "fumbles_lost": 0,
+      "drives": 12,
+      "turnovers": 2,
+      "game_no": 2
+    },
+    {
+      "week": 3,
+      "dropbacks": 18,
+      "interceptions": 0,
+      "fumbles_lost": 0,
+      "drives": 12,
+      "turnovers": 0,
+      "game_no": 3
+    },
+    {
+      "week": 4,
+      "dropbacks": 30,
+      "interceptions": 0,
+      "fumbles_lost": 0,
+      "drives": 10,
+      "turnovers": 0,
+      "game_no": 4
+    },
+    {
+      "week": 5,
+      "dropbacks": 34,
+      "interceptions": 1,
+      "fumbles_lost": 0,
+      "drives": 10,
+      "turnovers": 1,
+      "game_no": 5
+    },
+    {
+      "week": 6,
+      "dropbacks": 29,
+      "interceptions": 0,
+      "fumbles_lost": 0,
+      "drives": 12,
+      "turnovers": 0,
+      "game_no": 6
+    },
+    {
+      "week": 7,
+      "dropbacks": 34,
+      "interceptions": 1,
+      "fumbles_lost": 1,
+      "drives": 15,
+      "turnovers": 2,
+      "game_no": 7
+    },
+    {
+      "week": 9,
+      "dropbacks": 24,
+      "interceptions": 1,
+      "fumbles_lost": 0,
+      "drives": 10,
+      "turnovers": 1,
+      "game_no": 8
+    },
+    {
+      "week": 10,
+      "dropbacks": 13,
+      "interceptions": 1,
+      "fumbles_lost": 2,
+      "drives": 13,
+      "turnovers": 3,
+      "game_no": 9
+    },
+    {
+      "week": 11,
+      "dropbacks": 45,
+      "interceptions": 4,
+      "fumbles_lost": 0,
+      "drives": 12,
+      "turnovers": 4,
+      "game_no": 10
+    },
+    {
+      "week": 12,
+      "dropbacks": 27,
+      "interceptions": 0,
+      "fumbles_lost": 0,
+      "drives": 10,
+      "turnovers": 0,
+      "game_no": 11
+    },
+    {
+      "week": 13,
+      "dropbacks": 30,
+      "interceptions": 0,
+      "fumbles_lost": 1,
+      "drives": 11,
+      "turnovers": 1,
+      "game_no": 12
+    },
+    {
+      "week": 14,
+      "dropbacks": 34,
+      "interceptions": 1,
+      "fumbles_lost": 0,
+      "drives": 11,
+      "turnovers": 1,
+      "game_no": 13
+    },
+    {
+      "week": 15,
+      "dropbacks": 37,
+      "interceptions": 0,
+      "fumbles_lost": 0,
+      "drives": 11,
+      "turnovers": 0,
+      "game_no": 14
+    },
+    {
+      "week": 16,
+      "dropbacks": 41,
+      "interceptions": 2,
+      "fumbles_lost": 0,
+      "drives": 14,
+      "turnovers": 2,
+      "game_no": 15
+    },
+    {
+      "week": 17,
+      "dropbacks": 31,
+      "interceptions": 1,
+      "fumbles_lost": 1,
+      "drives": 11,
+      "turnovers": 2,
+      "game_no": 16
+    },
+    {
+      "week": 18,
+      "dropbacks": 30,
+      "interceptions": 0,
+      "fumbles_lost": 0,
+      "drives": 9,
+      "turnovers": 0,
+      "game_no": 17
+    }
+  ],
+  "rolling_analysis": {
+    "window_games": 4,
+    "definition": "exposure-weighted: sum(turnovers)/sum(dropbacks) over window",
+    "log_linear_slope_per_game": -0.0039015827869187825,
+    "rate_multiplier_per_game": 0.9961060184983083,
+    "rate_multiplier_over_season": 0.9394832164877872,
+    "likelihood_ratio_stat": 0.007291423962527688,
+    "p_value_trend": 0.9319514739506457,
+    "first_half_games": 8,
+    "first_half_turnovers": 7,
+    "first_half_dropbacks": 228,
+    "first_half_rate_per_dropback": 0.03070175438596491,
+    "first_half_turnovers_per_game": 0.875,
+    "second_half_games": 9,
+    "second_half_turnovers": 13,
+    "second_half_dropbacks": 288,
+    "second_half_rate_per_dropback": 0.04513888888888889,
+    "second_half_turnovers_per_game": 1.4444444444444444,
+    "p_value_half_split": 0.5023604339484579,
+    "direction": "worse in second half",
+    "narrative_supported": false,
+    "conclusion": "The 'Darnold got safer with the ball as the season went on' narrative is NOT supported. The point estimate moves the wrong way (second-half rate is higher), and neither the log-linear trend test nor the half-split test is significant, so the honest read is a flat in-season rate with no improvement. The playoff zero is a discontinuity, not the end of a trend."
+  },
+  "distribution": {
+    "chosen": "poisson",
+    "raw_variance_to_mean_ratio": 1.1937499999999999,
+    "weekly_mean": 1.1764705882352942,
+    "weekly_variance": 1.4044117647058822,
+    "pearson_chi2": 23.392489828710033,
+    "pearson_df": 16,
+    "exposure_adjusted_dispersion": 1.462030614294377,
+    "p_value_overdispersion": 0.10363838833025718,
+    "nb2_alpha": 0.047718364937986216,
+    "nb2_rate_per_dropback": 0.03876000837510093,
+    "loglik_poisson": -24.559832022720897,
+    "loglik_nb2": -24.550173785781336,
+    "aic_poisson": 51.119664045441795,
+    "aic_nb2": 53.10034757156267,
+    "nb2_lr_stat": 0.019316473879122498,
+    "p_value_nb2_vs_poisson": 0.4447315076468333,
+    "chosen_distribution": "poisson",
+    "reason": "Exposure-adjusted dispersion is not significantly above 1 and the boundary-corrected LRT does not prefer NB2, so the extra dispersion parameter is not earned. NB2 results retained as a conservative bound."
+  },
+  "playoff_exposure_derived": {
+    "games": 3,
+    "dropbacks": 91.05882352941177,
+    "drives": 34.05882352941177,
+    "basis": "3 games at Darnold's own 2025 regular-season average of 30.35 dropbacks / 11.35 drives per game"
+  },
+  "playoff_actual": {
+    "games": 3,
+    "dropbacks": 99,
+    "drives": 34,
+    "interceptions": 0,
+    "fumbles_lost": 0,
+    "turnovers": 0
+  },
+  "p_zero_turnovers": {
+    "primary_per_dropback": {
+      "expected_turnovers": 3.5294117647058822,
+      "p_zero_poisson": 0.02932215912389382,
+      "odds_against_1_in": 34.10390059527123,
+      "p_zero_negative_binomial": 0.03831717065317359,
+      "odds_against_nb_1_in": 26.0979603387594
+    },
+    "per_drive": {
+      "expected_turnovers": 3.5294117647058827,
+      "p_zero_poisson": 0.02932215912389381,
+      "odds_against_1_in": 34.103900595271234,
+      "p_zero_negative_binomial": 0.03831717065317359,
+      "odds_against_nb_1_in": 26.0979603387594
+    },
+    "note": "Per-dropback and per-drive give the same lambda by construction: sizing exposure as 3 x his own per-game average cancels the denominator, so lambda = 3 x (20/17) = 3.53 either way. The agreement is arithmetic, not independent confirmation."
+  },
+  "sensitivity": {
+    "actual_playoff_dropbacks": {
+      "expected_turnovers": 3.8372093023255816,
+      "p_zero_poisson": 0.021553667262303535,
+      "odds_against_1_in": 46.39581690810261,
+      "p_zero_negative_binomial": 0.029491704842652462,
+      "odds_against_nb_1_in": 33.90783969035751
+    },
+    "actual_playoff_drives": {
+      "expected_turnovers": 3.5233160621761654,
+      "p_zero_poisson": 0.02950144416242391,
+      "odds_against_1_in": 33.89664568603402,
+      "p_zero_negative_binomial": 0.03851762090996742,
+      "odds_against_nb_1_in": 25.962143465128303
+    },
+    "first_half_rate_regime": {
+      "expected_turnovers": 2.7956656346749225,
+      "p_zero_poisson": 0.06107420768914456,
+      "odds_against_1_in": 16.373523911923655,
+      "p_zero_negative_binomial": 0.07249243921258929,
+      "odds_against_nb_1_in": 13.794542035858777
+    },
+    "second_half_rate_regime": {
+      "expected_turnovers": 4.110294117647059,
+      "p_zero_poisson": 0.01640294941986476,
+      "odds_against_1_in": 60.96464571115192,
+      "p_zero_negative_binomial": 0.0234424990805032,
+      "odds_against_nb_1_in": 42.657568059016626
+    },
+    "strict_dropback_turnovers_only": {
+      "expected_turnovers": 3.3529411764705888,
+      "p_zero_poisson": 0.0349813164243501,
+      "odds_against_1_in": 28.58668861598105,
+      "p_zero_negative_binomial": 0.04458862643656233,
+      "odds_against_nb_1_in": 22.427243894196476
+    }
+  }
+}
