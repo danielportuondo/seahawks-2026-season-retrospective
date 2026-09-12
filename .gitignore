@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 .DS_Store
 .env
+.playwright-mcp/
 
 # Re-fetchable raw data cache — keep the pipeline reproducible instead of
 # committing large binaries. /data/processed (small engineered outputs) IS
