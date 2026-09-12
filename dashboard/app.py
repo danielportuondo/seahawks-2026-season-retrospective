@@ -33,6 +33,9 @@ st.markdown(
 
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 
+/* Streamlit's default top padding pushes the hero a full screen-inch down. */
+[data-testid="stMain"] .block-container { padding-top: 1.2rem; }
+
 .hero-band {
     background: radial-gradient(ellipse 800px 260px at 15% 0%, rgba(105,190,40,.20), transparent 65%), #0F1E38;
     padding: 1.8rem 1.8rem 1.5rem;
@@ -46,12 +49,13 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 .hero-band h1 {
     font-family: 'Barlow Condensed', sans-serif;
     font-weight: 700;
-    font-size: 2rem;
+    font-size: 2.4rem;
     color: #F5F6F7;
-    margin: 0 0 4px;
-    line-height: 1.1;
+    margin: 0 0 6px;
+    line-height: 1.05;
+    letter-spacing: 0.005em;
 }
-.hero-band p { color: #A5ACAF; margin: 0; font-size: 0.98rem; }
+.hero-band p { color: #C3C9CC; margin: 0; font-size: 1rem; }
 
 [data-testid="stMetric"] {
     background: #0F1E38;
@@ -59,11 +63,63 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
     padding: 14px 14px 10px;
 }
 [data-testid="stMetricValue"] { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; }
-[data-testid="stMetricLabel"] { color: #A5ACAF; }
+[data-testid="stMetricLabel"] { color: #C3C9CC; }
 
-hr { height: 4px !important; background-color: #69BE28 !important; border: none !important; opacity: 1 !important; }
+/* delta_color="off" still ships a trend arrow and a pill; these captions are
+   context, not movement, so both read as a change that never happened. */
+[data-testid="stMetricDelta"] svg { display: none; }
+[data-testid="stMetricDelta"] {
+    background: none !important;
+    padding-left: 0 !important;
+    color: #A5ACAF;
+    font-size: 0.82rem;
+}
+
+/* Green marks the hero and the KPI row; a green divider on top of that leaves
+   the accent marking nothing. */
+hr {
+    height: 1px !important;
+    background-color: #22324E !important;
+    border: none !important;
+    opacity: 1 !important;
+    margin: 1.6rem 0 0.4rem !important;
+}
 
 h1, h2, h3 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; }
+h2 { font-size: 1.8rem !important; line-height: 1.15; margin-top: 2rem !important; }
+h3 {
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    color: #E6E9EA;
+    letter-spacing: 0.02em;
+    margin-top: 1.9rem !important;
+}
+
+/* Prose caps at a readable measure; charts, tables and images stay full width. */
+[data-testid="stMarkdownContainer"] p,
+[data-testid="stMarkdownContainer"] li { max-width: 44rem; line-height: 1.62; }
+[data-testid="stMarkdownContainer"] li { margin-bottom: 0.35rem; }
+[data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p { color: #C3C9CC; }
+
+/* The static charts are authored at a fixed pixel size; stretching them to a
+   1280px column renders their internal titles larger than the page's own. */
+[data-testid="stImage"] img { max-width: 880px !important; }
+
+@media (max-width: 640px) {
+    .hero-band {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 1.2rem 1.1rem 1rem;
+    }
+    .hero-band svg { width: 40px; height: 40px; }
+    .hero-band h1 { font-size: 1.55rem; }
+    h2 { font-size: 1.45rem !important; margin-top: 2rem !important; }
+    h3 { font-size: 1.1rem !important; }
+    /* Four full-width tiles otherwise cost two screens before any content. */
+    [data-testid="stMetric"] { padding: 10px 12px 8px; }
+    [data-testid="stMetricValue"] { font-size: 1.9rem !important; }
+}
 </style>
 """,
     unsafe_allow_html=True,
@@ -104,6 +160,9 @@ GREY = "#A5ACAF"
 AMBER = "#F2C14E"
 RED = "#D6432D"
 INK = "#F5F6F7"
+
+# Matches the image cap: charts, tables and prose all share one left column.
+NARROW_TABLE = 880
 
 
 def style_fig(fig, height: int | None = None):
@@ -207,9 +266,10 @@ statistically extreme unit in franchise history. Elite, genuinely — just
 not unprecedented.
 """
     )
-    dcol1, dcol2 = st.columns(2)
-    dcol1.image(str(OUTPUTS / "defense_anomaly_radar.png"), width="stretch")
-    dcol2.image(str(OUTPUTS / "defense_anomaly_historical_rank.png"), width="stretch")
+    st.image(str(OUTPUTS / "defense_anomaly_radar.png"), width="stretch")
+    # Three panels in one figure: at half-column width its axis labels are
+    # unreadable, so it gets the full column to itself.
+    st.image(str(OUTPUTS / "defense_anomaly_historical_rank.png"), width="stretch")
 
     st.header("The turnover-free playoff run")
     st.markdown(
@@ -343,30 +403,30 @@ with tab_alltime:
 
     k1, k2, k3, k4 = st.columns(4)
     k1.metric(
-        "Clock-weighted lead",
+        "Clock-weighted lead (points)",
         f"+{hm['time_weighted_margin']['sea_2025_value']:.1f}",
-        f"{hm['time_weighted_margin']['rank_of_n'][0]} of "
+        f"Rank {hm['time_weighted_margin']['rank_of_n'][0]} of "
         f"{hm['time_weighted_margin']['rank_of_n'][1]} since 1999",
         delta_color="off",
     )
     k2.metric(
         "Explosive plays allowed",
         f"{100 * hm['def_explosive_rate_allowed']['sea_2025_value']:.1f}%",
-        f"{hm['def_explosive_rate_allowed']['rank_of_n'][0]} of "
+        f"Rank {hm['def_explosive_rate_allowed']['rank_of_n'][0]} of "
         f"{hm['def_explosive_rate_allowed']['rank_of_n'][1]} since 1999",
         delta_color="off",
     )
     k3.metric(
-        "Best 8-game defensive stretch",
+        "Best 8-game defensive stretch (EPA/play)",
         f"{streak['garbage_time_filtered']['sea_2025_best_window']:.3f}",
-        f"{streak['garbage_time_filtered']['sea_2025_rank_of_n'][0]} of "
-        f"{streak['garbage_time_filtered']['sea_2025_rank_of_n'][1]} EPA/play",
+        f"Rank {streak['garbage_time_filtered']['sea_2025_rank_of_n'][0]} of "
+        f"{streak['garbage_time_filtered']['sea_2025_rank_of_n'][1]} since 1999",
         delta_color="off",
     )
     k4.metric(
         "Seasons that reach 14+ wins",
         f"{mc['pct_of_seasons_at_least_14_wins']:.0f}%",
-        f"of {counterfactual['methodology']['n_simulations']:,} replays",
+        f"Across {counterfactual['methodology']['n_simulations']:,} replays",
         delta_color="off",
     )
 
@@ -399,7 +459,14 @@ This team won by never letting anything big happen, not by generating chaos.
     )
 
     metric_labels = {v["label"]: k for k, v in hm.items()}
-    picked_label = st.selectbox("Metric", sorted(metric_labels), key="alltime_metric")
+    metric_choices = sorted(metric_labels)
+    headline_label = hm["def_explosive_rate_allowed"]["label"]
+    picked_label = st.selectbox(
+        "Metric",
+        metric_choices,
+        index=metric_choices.index(headline_label),
+        key="alltime_metric",
+    )
     picked = metric_labels[picked_label]
     meta = hm[picked]
 
@@ -632,14 +699,45 @@ pressure rate.
 
     st.header("Pythagorean win expectation")
     st.markdown("`PF^2.37 / (PF^2.37 + PA^2.37)` — the standard NFL exponent.")
-    pyth_df = pd.DataFrame(pyth).T
-    pyth_df.index.name = "season"
-    st.dataframe(pyth_df, width="stretch")
+    PYTH_ROWS = {
+        "points_for": "Points for",
+        "points_against": "Points against",
+        "games": "Games",
+        "actual_wins": "Actual wins",
+        "actual_losses": "Actual losses",
+        "pythagorean_win_pct": "Pythagorean win %",
+        "pythagorean_expected_wins": "Expected wins",
+        "wins_over_expectation": "Wins over expectation",
+    }
+    pyth_df = pd.DataFrame(pyth).loc[list(PYTH_ROWS)].rename(index=PYTH_ROWS)
+    pyth_df.index.name = ""
+    # Two data columns stretched to 1280px put each number a screen away from
+    # its own label.
+    st.dataframe(pyth_df, width=NARROW_TABLE)
 
     st.header("Personnel and scheme deltas")
-    personnel_df = pd.DataFrame(personnel).T
-    personnel_df.index.name = "season"
-    st.dataframe(personnel_df, width="stretch")
+    # 13 columns across 2 seasons overflows the container and truncates; one
+    # column per season keeps every field visible.
+    PERSONNEL_ROWS = {
+        "qb": "Quarterback",
+        "oc": "Offensive coordinator",
+        "completions": "Completions",
+        "attempts": "Attempts",
+        "completion_pct": "Completion %",
+        "passing_yards": "Passing yards",
+        "interceptions": "Interceptions",
+        "int_rate_pct": "Interception rate %",
+        "fumbles_lost": "Fumbles lost",
+        "sacks_suffered": "Sacks allowed",
+        "dropbacks": "Dropbacks",
+        "pressured_dropbacks": "Pressured dropbacks",
+        "pressure_rate_pct": "Pressure rate allowed %",
+    }
+    personnel_df = (
+        pd.DataFrame(personnel).loc[list(PERSONNEL_ROWS)].rename(index=PERSONNEL_ROWS)
+    )
+    personnel_df.index.name = ""
+    st.dataframe(personnel_df, width=NARROW_TABLE)
 
     st.header("Engineered features (Phase 4)")
     st.markdown(
@@ -649,22 +747,24 @@ Team-week features from play-by-play: offensive/defensive EPA per play
 time excluded), turnover margin, red-zone TD rate, and pressure rate.
 """
     )
+    FEATURE_LABELS = {
+        "off_epa_per_play": "Offensive EPA/play",
+        "def_epa_per_play_allowed": "Defensive EPA/play allowed",
+        "turnover_margin_per_game": "Turnover margin per game",
+        "red_zone_td_pct": "Red zone TD %",
+        "pressure_rate_allowed": "Pressure rate allowed %",
+        "pressure_rate_created": "Pressure rate created %",
+    }
     team_season = load_team_season_features()
     sea_season_avg = (
         team_season[team_season["team"] == "SEA"]
-        .set_index("season")[
-            [
-                "off_epa_per_play",
-                "def_epa_per_play_allowed",
-                "turnover_margin_per_game",
-                "red_zone_td_pct",
-                "pressure_rate_allowed",
-                "pressure_rate_created",
-            ]
-        ]
-        .round(3)
+        .set_index("season")[list(FEATURE_LABELS)]
+        .rename(columns=FEATURE_LABELS)
+        .round(2)
+        .T
     )
-    st.dataframe(sea_season_avg, width="stretch")
+    sea_season_avg.index.name = ""
+    st.dataframe(sea_season_avg, width=NARROW_TABLE)
 
     st.header("Defense anomaly detection (Phase 5)")
     meth = defense["methodology"]
@@ -683,15 +783,58 @@ sits at the **65.8th percentile** on the Isolation Forest anomaly score —
 elite, but not off-the-charts by either measure.
 """
     )
-    m1, m2 = st.columns(2)
-    with m1:
-        st.subheader("SEA 2024")
-        st.json(defense["SEA_2024"], expanded=False)
-    with m2:
-        st.subheader("SEA 2025")
-        st.json(defense["SEA_2025"], expanded=False)
+    DEFENSE_ROWS = {
+        "def_epa_per_play_allowed": "EPA/play allowed",
+        "sack_rate_created": "Sack rate created",
+        "takeaways_per_drive": "Takeaways per drive",
+        "points_allowed_per_game": "Points allowed per game",
+    }
+    st.subheader("Inputs and scores, SEA 2024 vs. 2025")
+    anomaly_df = pd.DataFrame(
+        {
+            f"{season} raw": [defense[f"SEA_{season}"]["raw"][k] for k in DEFENSE_ROWS]
+            for season in (2024, 2025)
+        }
+        | {
+            f"{season} z-score": [
+                defense[f"SEA_{season}"]["z_scores"][k] for k in DEFENSE_ROWS
+            ]
+            for season in (2024, 2025)
+        },
+        index=list(DEFENSE_ROWS.values()),
+    ).round(3)[["2024 raw", "2024 z-score", "2025 raw", "2025 z-score"]]
+    anomaly_df.index.name = ""
+    st.dataframe(anomaly_df, width=NARROW_TABLE)
+
+    SCORE_ROWS = {
+        "composite_z": "Composite z-score",
+        "composite_z_rank_of_n": "Composite rank (of 512)",
+        "composite_z_pctile": "Composite percentile",
+        "mahalanobis": "Mahalanobis distance",
+        "mahalanobis_rank_among_good_direction": "Mahalanobis rank (good-direction)",
+        "iso_forest_anomaly_score": "Isolation Forest score",
+        "iso_forest_pctile": "Isolation Forest percentile",
+    }
+    score_df = pd.DataFrame(
+        {
+            str(season): [defense[f"SEA_{season}"][k] for k in SCORE_ROWS]
+            for season in (2024, 2025)
+        },
+        index=list(SCORE_ROWS.values()),
+    )
+    score_df.index.name = ""
+    st.dataframe(score_df, width=NARROW_TABLE)
+
     st.markdown("**Top 10 team-seasons by composite z-score, 2010–2025:**")
-    st.dataframe(pd.DataFrame(defense["top10_by_composite_z"]), width="stretch", hide_index=True)
+    top10_df = pd.DataFrame(defense["top10_by_composite_z"]).rename(
+        columns={
+            "season": "Season",
+            "team": "Team",
+            "composite_z": "Composite z-score",
+            "mahalanobis": "Mahalanobis distance",
+        }
+    )
+    st.dataframe(top10_df, width=NARROW_TABLE, hide_index=True)
 
     st.header("Turnover rate model (Phase 6)")
     st.markdown(turnover["framing"]["not_extreme_value_theory"])
@@ -726,7 +869,26 @@ surprising, not less.
         delta_color="off",
     )
     st.markdown("**Sensitivity to modeling assumptions:**")
-    st.dataframe(pd.DataFrame(turnover["sensitivity"]).T, width="stretch")
+    SENSITIVITY_COLS = {
+        "expected_turnovers": "Expected turnovers",
+        "p_zero_poisson": "P(zero) Poisson",
+        "odds_against_1_in": "Odds against, 1 in",
+        "p_zero_negative_binomial": "P(zero) neg. binomial",
+        "odds_against_nb_1_in": "Odds against (NB), 1 in",
+    }
+    SENSITIVITY_ROWS = {
+        "actual_playoff_dropbacks": "Actual playoff dropbacks",
+        "actual_playoff_drives": "Actual playoff drives",
+        "first_half_rate_regime": "First-half rate regime",
+        "second_half_rate_regime": "Second-half rate regime",
+    }
+    sensitivity_df = (
+        pd.DataFrame(turnover["sensitivity"])
+        .T.rename(index=SENSITIVITY_ROWS, columns=SENSITIVITY_COLS)
+        .round(3)
+    )
+    sensitivity_df.index.name = ""
+    st.dataframe(sensitivity_df, width="stretch")
 
     st.header("Regression decomposition (Phase 7)")
     ols = decomp["ols_point_diff_per_game"]
@@ -740,14 +902,19 @@ ensemble would overfit, and a linear model's coefficients already *are* the
 decomposition — no separate explainability layer is needed on top of them.
 """
     )
-    coef_df = pd.DataFrame(
-        {
-            "coefficient": ols["coefficients"],
-            "std_error": ols["std_errors"],
-            "p_value": ols["p_values"],
-        }
-    ).drop("intercept")
-    st.dataframe(coef_df, width="stretch")
+    coef_df = (
+        pd.DataFrame(
+            {
+                "Coefficient": ols["coefficients"],
+                "Std. error": ols["std_errors"],
+                "p-value": ols["p_values"],
+            }
+        )
+        .drop("intercept")
+        .rename(index=FEATURE_LABELS)
+    )
+    coef_df.index.name = ""
+    st.dataframe(coef_df, width=NARROW_TABLE)
 
     sea_decomp = decomp["sea_decomposition"]
     st.markdown(
@@ -760,7 +927,21 @@ to **{sea_decomp["sea_point_diff_per_game_2025"]:.2f}**
 """
     )
     st.markdown("**Per-feature contribution to the point-differential change:**")
-    per_feature_df = pd.DataFrame(sea_decomp["per_feature"]).T
+    PER_FEATURE_COLS = {
+        "raw_2024": "2024 raw",
+        "raw_2025": "2025 raw",
+        "z_2024": "2024 z",
+        "z_2025": "2025 z",
+        "delta_z": "Δ z",
+        "coefficient": "Coefficient",
+        "contribution_to_point_diff_change": "Points contributed",
+    }
+    per_feature_df = (
+        pd.DataFrame(sea_decomp["per_feature"])
+        .T.rename(index=FEATURE_LABELS, columns=PER_FEATURE_COLS)
+        .round(3)
+    )
+    per_feature_df.index.name = ""
     st.dataframe(per_feature_df, width="stretch")
 
     st.header("Historical baseline (Phase 13)")
