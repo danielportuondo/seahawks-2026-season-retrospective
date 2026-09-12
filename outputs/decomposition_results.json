@@ -1,0 +1,165 @@
+{
+  "methodology": {
+    "n_team_seasons": 64,
+    "seasons": [
+      2024,
+      2025
+    ],
+    "model": "OLS, standardized (z-scored) features, fit across all 32 teams x 2 seasons",
+    "primary_target": "point_diff_per_game (points_for - points_against, per game)",
+    "secondary_target": "wins (regular-season wins, ties=0.5), reported as a rougher cross-check",
+    "why_not_wins_primary": "Phase 2 showed SEA overachieved its Pythagorean win expectation both years, so wins already contain a tiebreaker/luck component that point differential does not capture by construction.",
+    "why_not_gradient_boosting": "xgboost/shap are not installed and CLAUDE.md requires asking before adding dependencies; at n=64 a tree ensemble would overfit and its SHAP attributions would be noisier than linear coefficients, which already ARE the decomposition.",
+    "sklearn_cross_check_max_coef_diff": 2.275957200481571e-15
+  },
+  "ols_point_diff_per_game": {
+    "n": 64,
+    "dof_resid": 57,
+    "r2": 0.9189776248927701,
+    "r2_adj": 0.9104489538288512,
+    "coefficients": {
+      "intercept": 1.1102230246251565e-16,
+      "off_epa_per_play": 4.083639331957773,
+      "def_epa_per_play_allowed": -2.6986158053836156,
+      "turnover_margin_per_game": 0.4989265589611297,
+      "red_zone_td_pct": 0.22198892486625207,
+      "pressure_rate_allowed": 0.3642825177940112,
+      "pressure_rate_created": 0.07201343799711762
+    },
+    "std_errors": {
+      "intercept": 0.23835204257190645,
+      "off_epa_per_play": 0.36308687636550324,
+      "def_epa_per_play_allowed": 0.3443090173451537,
+      "turnover_margin_per_game": 0.3372218235270476,
+      "red_zone_td_pct": 0.31858871440854697,
+      "pressure_rate_allowed": 0.29288334121503506,
+      "pressure_rate_created": 0.28036469697833444
+    },
+    "t_stats": {
+      "intercept": 4.65791277744231e-16,
+      "off_epa_per_play": 11.247003397189594,
+      "def_epa_per_play_allowed": -7.837772667680032,
+      "turnover_margin_per_game": 1.4795203754691524,
+      "red_zone_td_pct": 0.6967884134827868,
+      "pressure_rate_allowed": 1.24378025831983,
+      "pressure_rate_created": 0.2568562974342043
+    },
+    "p_values": {
+      "intercept": 0.9999999999999997,
+      "off_epa_per_play": 4.2535560058152817e-16,
+      "def_epa_per_play_allowed": 1.2786491436974313e-10,
+      "turnover_margin_per_game": 0.14450719323987982,
+      "red_zone_td_pct": 0.48876726351558736,
+      "pressure_rate_allowed": 0.2186714218703609,
+      "pressure_rate_created": 0.7982146084711803
+    },
+    "residual_std": 1.9068163405752516
+  },
+  "ols_wins_secondary": {
+    "n": 64,
+    "dof_resid": 57,
+    "r2": 0.7989031515914766,
+    "r2_adj": 0.7777350622853163,
+    "coefficients": {
+      "intercept": 8.5,
+      "off_epa_per_play": 1.955495112597572,
+      "def_epa_per_play_allowed": -1.4498263900524149,
+      "turnover_margin_per_game": 0.5580360114292775,
+      "red_zone_td_pct": -0.15526792236551604,
+      "pressure_rate_allowed": 0.061177263900280554,
+      "pressure_rate_created": -0.036605513400886025
+    },
+    "std_errors": {
+      "intercept": 0.2096720605447479,
+      "off_epa_per_play": 0.3193980328544674,
+      "def_epa_per_play_allowed": 0.3028796411892158,
+      "turnover_margin_per_game": 0.296645222069967,
+      "red_zone_td_pct": 0.28025416310913376,
+      "pressure_rate_allowed": 0.2576418183337396,
+      "pressure_rate_created": 0.2466294942772181
+    },
+    "t_stats": {
+      "intercept": 40.53949762269801,
+      "off_epa_per_play": 6.122439437467,
+      "def_epa_per_play_allowed": -4.786807011391946,
+      "turnover_margin_per_game": 1.8811562429198965,
+      "red_zone_td_pct": -0.5540253912483475,
+      "pressure_rate_allowed": 0.2374508311419919,
+      "pressure_rate_created": -0.1484230971975333
+    },
+    "p_values": {
+      "intercept": 1.0013906913992956e-43,
+      "off_epa_per_play": 9.056703175831055e-08,
+      "def_epa_per_play_allowed": 1.2427274697204982e-05,
+      "turnover_margin_per_game": 0.06506166268138433,
+      "red_zone_td_pct": 0.5817285811339453,
+      "pressure_rate_allowed": 0.8131584778919866,
+      "pressure_rate_created": 0.8825327119837721
+    },
+    "residual_std": 1.6773764843579833
+  },
+  "sea_decomposition": {
+    "sea_point_diff_per_game_2024": 0.412,
+    "sea_point_diff_per_game_2025": 11.235,
+    "actual_change": 10.824,
+    "predicted_change_from_features": 12.808,
+    "residual_unexplained": -1.985,
+    "residual_pct_of_actual_change": -18.3,
+    "per_feature": {
+      "off_epa_per_play": {
+        "raw_2024": -0.0439,
+        "raw_2025": 0.146,
+        "z_2024": -0.414,
+        "z_2025": 1.157,
+        "delta_z": 1.571,
+        "coefficient": 4.0836,
+        "contribution_to_point_diff_change": 6.4166
+      },
+      "def_epa_per_play_allowed": {
+        "raw_2024": -0.0072,
+        "raw_2025": -0.2455,
+        "z_2024": -0.146,
+        "z_2025": -2.737,
+        "delta_z": -2.591,
+        "coefficient": -2.6986,
+        "contribution_to_point_diff_change": 6.9932
+      },
+      "turnover_margin_per_game": {
+        "raw_2024": -0.1176,
+        "raw_2025": -0.0588,
+        "z_2024": -0.215,
+        "z_2025": -0.108,
+        "delta_z": 0.108,
+        "coefficient": 0.4989,
+        "contribution_to_point_diff_change": 0.0538
+      },
+      "red_zone_td_pct": {
+        "raw_2024": 57.1429,
+        "raw_2025": 54.2373,
+        "z_2024": 0.035,
+        "z_2025": -0.372,
+        "delta_z": -0.408,
+        "coefficient": 0.222,
+        "contribution_to_point_diff_change": -0.0905
+      },
+      "pressure_rate_allowed": {
+        "raw_2024": 16.8657,
+        "raw_2025": 12.1622,
+        "z_2024": 0.649,
+        "z_2025": -0.793,
+        "delta_z": -1.442,
+        "coefficient": 0.3643,
+        "contribution_to_point_diff_change": -0.5252
+      },
+      "pressure_rate_created": {
+        "raw_2024": 17.5194,
+        "raw_2025": 16.1103,
+        "z_2024": 1.071,
+        "z_2025": 0.522,
+        "delta_z": -0.55,
+        "coefficient": 0.072,
+        "contribution_to_point_diff_change": -0.0396
+      }
+    }
+  }
+}
