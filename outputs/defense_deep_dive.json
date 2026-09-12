@@ -4,7 +4,8 @@
     "window_scope": "within a single regular season; windows never cross seasons, postseason excluded",
     "team_seasons_evaluated": 861,
     "why_two_bases": "Published EPA-streak figures are computed without a garbage-time filter, so the claim is tested unfiltered. The filtered version is reported alongside because it is what the rest of this project uses -- and it is the less flattering of the two for a dominant defense, which spends more snaps in garbage time precisely because it is dominant.",
-    "pressure_limitation": "The pbp cache has no participation or pass-rusher data. Blitz rate is NOT computable; the published 19.2% figure cannot be checked here. Pressure is Phase 4's (sack OR qb_hit) proxy, which is narrower than a charted pressure and reads lower than the published 40.1%."
+    "pressure_limitation": "The pbp cache has no participation or pass-rusher data. Blitz rate is NOT computable; the published 19.2% figure cannot be checked here. Pressure is Phase 4's (sack OR qb_hit) proxy, which is narrower than a charted pressure and reads lower than the published 40.1%.",
+    "pressure_reference_window": "Pressure rate created is ranked from 2006 only, not 1999. nflverse qb_hit attribution is not stationary: 2003-2005 contain zero qb_hits and 1999-2002 about half the modern rate, so the proxy degrades to a bare sack rate in those years. Ranking 2025 against all 861 team-seasons overstated it. Every other metric on this page still uses the full 861."
   },
   "eight_week_streak_claim": {
     "claim": "SEA 2025's best 8-week defensive stretch at -0.34 EPA/play is the best in 25 years; SEA 2013 peaked at -0.23",
@@ -360,7 +361,11 @@
         861
       ],
       "percentile": 93.3,
-      "rank_in_2025": 1
+      "rank_in_2025": 1,
+      "reference_window": [
+        1999,
+        2025
+      ]
     },
     "def_success_rate_allowed": {
       "label": "Success rate allowed",
@@ -370,7 +375,11 @@
         861
       ],
       "percentile": 82.8,
-      "rank_in_2025": 3
+      "rank_in_2025": 3,
+      "reference_window": [
+        1999,
+        2025
+      ]
     },
     "def_explosive_rate_allowed": {
       "label": "Explosive play rate allowed",
@@ -380,7 +389,11 @@
         861
       ],
       "percentile": 98.7,
-      "rank_in_2025": 2
+      "rank_in_2025": 2,
+      "reference_window": [
+        1999,
+        2025
+      ]
     },
     "def_yards_per_carry_allowed": {
       "label": "Yards per carry allowed",
@@ -390,7 +403,11 @@
         861
       ],
       "percentile": 87.0,
-      "rank_in_2025": 1
+      "rank_in_2025": 1,
+      "reference_window": [
+        1999,
+        2025
+      ]
     },
     "points_per_drive_allowed": {
       "label": "Points per drive allowed",
@@ -400,7 +417,11 @@
         861
       ],
       "percentile": 87.6,
-      "rank_in_2025": 1
+      "rank_in_2025": 1,
+      "reference_window": [
+        1999,
+        2025
+      ]
     },
     "scoring_drive_pct_allowed": {
       "label": "Opponent scoring-drive rate",
@@ -410,7 +431,11 @@
         861
       ],
       "percentile": 79.9,
-      "rank_in_2025": 2
+      "rank_in_2025": 2,
+      "reference_window": [
+        1999,
+        2025
+      ]
     },
     "three_and_out_rate_forced": {
       "label": "Three-and-outs forced",
@@ -420,7 +445,11 @@
         861
       ],
       "percentile": 49.1,
-      "rank_in_2025": 11
+      "rank_in_2025": 11,
+      "reference_window": [
+        1999,
+        2025
+      ]
     },
     "points_against_per_game": {
       "label": "Points allowed per game",
@@ -430,7 +459,11 @@
         861
       ],
       "percentile": 91.3,
-      "rank_in_2025": 1
+      "rank_in_2025": 1,
+      "reference_window": [
+        1999,
+        2025
+      ]
     },
     "takeaways": {
       "label": "Takeaways",
@@ -440,17 +473,25 @@
         861
       ],
       "percentile": 51.4,
-      "rank_in_2025": 6
+      "rank_in_2025": 6,
+      "reference_window": [
+        1999,
+        2025
+      ]
     },
     "pressure_rate_created": {
       "label": "Pressure rate created (proxy)",
       "value": 0.1611,
       "rank_of_n": [
         115,
-        861
+        640
       ],
-      "percentile": 86.7,
-      "rank_in_2025": 12
+      "percentile": 82.1,
+      "rank_in_2025": 12,
+      "reference_window": [
+        2006,
+        2025
+      ]
     }
   }
 }

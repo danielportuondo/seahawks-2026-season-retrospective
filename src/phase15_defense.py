@@ -36,6 +36,17 @@ and pressure is only available as Phase 4's (sack OR qb_hit) proxy, which
 measures something narrower than a charted pressure and will read lower. Both
 limitations are recorded in the output rather than papered over with a
 similar-looking number.
+
+PRESSURE'S REFERENCE WINDOW IS SHORTER THAN EVERY OTHER METRIC'S, and this is not
+a stylistic choice. nflverse's qb_hit attribution is not stationary across the
+cache: 1999-2002 carry roughly 1,000 qb_hits a season, 2003-2005 carry EXACTLY
+ZERO, and 2006 onward carry 2,000-2,900. In the three empty seasons the proxy
+silently degrades to a bare sack rate and parks those team-seasons at the bottom
+of the distribution; in 1999-2002 it runs at about half its modern level. Ranking
+2025 against all 861 team-seasons therefore flattered it by comparing against
+years where half the metric did not exist. Pressure alone is ranked from 2006,
+and the window is written into the output next to the number so the shorter
+denominator travels with it.
 """
 
 from __future__ import annotations
@@ -67,6 +78,10 @@ FOCUS_TEAM = "SEA"
 FOCUS_SEASON = 2025
 COMPARISON_SEASON = 2013  # the Legion of Boom benchmark the claim names
 WINDOW = 8
+
+# 2003-2005 carry zero qb_hits and 1999-2002 about half the modern rate, so the
+# (sack OR qb_hit) proxy is only comparable from here on.
+QB_HIT_FIRST_SEASON = 2006
 
 CLAIMED_SEA_2025_PEAK = -0.34
 CLAIMED_SEA_2013_PEAK = -0.23
@@ -143,33 +158,38 @@ def streak_claim(best: pd.DataFrame, label: str, claimed_2025: float, claimed_20
 def supporting_metrics(reg: pd.DataFrame) -> dict:
     sea = reg[(reg["team"] == FOCUS_TEAM) & (reg["season"] == FOCUS_SEASON)].iloc[0]
     out = {}
-    for metric, label, higher_better in [
-        ("def_epa_per_play_allowed", "Defensive EPA/play allowed", False),
-        ("def_success_rate_allowed", "Success rate allowed", False),
-        ("def_explosive_rate_allowed", "Explosive play rate allowed", False),
-        ("def_yards_per_carry_allowed", "Yards per carry allowed", False),
-        ("points_per_drive_allowed", "Points per drive allowed", False),
-        ("scoring_drive_pct_allowed", "Opponent scoring-drive rate", False),
-        ("three_and_out_rate_forced", "Three-and-outs forced", True),
-        ("points_against_per_game", "Points allowed per game", False),
-        ("takeaways", "Takeaways", True),
-        ("pressure_rate_created", "Pressure rate created (proxy)", True),
+    for metric, label, higher_better, min_season in [
+        ("def_epa_per_play_allowed", "Defensive EPA/play allowed", False, None),
+        ("def_success_rate_allowed", "Success rate allowed", False, None),
+        ("def_explosive_rate_allowed", "Explosive play rate allowed", False, None),
+        ("def_yards_per_carry_allowed", "Yards per carry allowed", False, None),
+        ("points_per_drive_allowed", "Points per drive allowed", False, None),
+        ("scoring_drive_pct_allowed", "Opponent scoring-drive rate", False, None),
+        ("three_and_out_rate_forced", "Three-and-outs forced", True, None),
+        ("points_against_per_game", "Points allowed per game", False, None),
+        ("takeaways", "Takeaways", True, None),
+        ("pressure_rate_created", "Pressure rate created (proxy)", True, QB_HIT_FIRST_SEASON),
     ]:
+        ref = reg if min_season is None else reg[reg["season"] >= min_season]
         value = float(sea[metric])
-        pct = percentile_rank(reg[metric], value)
+        pct = percentile_rank(ref[metric], value)
         if not higher_better:
             pct = 100 - pct
         out[metric] = {
             "label": label,
             "value": round(value, 4),
             "rank_of_n": [
-                rank_in_good_direction(reg[metric], value, higher_better),
-                int(reg[metric].notna().sum()),
+                rank_in_good_direction(ref[metric], value, higher_better),
+                int(ref[metric].notna().sum()),
             ],
             "percentile": round(pct, 1),
             "rank_in_2025": rank_in_good_direction(
                 reg[reg["season"] == FOCUS_SEASON][metric], value, higher_better
             ),
+            "reference_window": [
+                int(ref["season"].min()),
+                int(ref["season"].max()),
+            ],
         }
     return out
 
@@ -288,6 +308,13 @@ def main() -> None:
                 "Phase 4's (sack OR qb_hit) proxy, which is narrower than a charted pressure "
                 "and reads lower than the published 40.1%."
             ),
+            "pressure_reference_window": (
+                f"Pressure rate created is ranked from {QB_HIT_FIRST_SEASON} only, not 1999. "
+                "nflverse qb_hit attribution is not stationary: 2003-2005 contain zero qb_hits "
+                "and 1999-2002 about half the modern rate, so the proxy degrades to a bare sack "
+                "rate in those years. Ranking 2025 against all 861 team-seasons overstated it. "
+                "Every other metric on this page still uses the full 861."
+            ),
         },
         "eight_week_streak_claim": {
             "claim": (
@@ -316,10 +343,11 @@ def main() -> None:
         print(f"  Ahead of SEA 2025: {[(a['season'], a['team']) for a in ahead[:5]] or 'none'}"
               f"{' ...' if len(ahead) > 5 else ''}\n")
 
-    print("Season-long defensive metrics (percentile among 861 team-seasons):")
+    print("Season-long defensive metrics (percentile among all team-seasons in each window):")
     for v in sorted(support.values(), key=lambda d: -d["percentile"]):
+        window = f"{v['reference_window'][0]}-{v['reference_window'][1]}"
         print(f"  {v['label']:<32} {v['value']:>8.3f}  {v['percentile']:>5.1f} pct  "
-              f"({v['rank_of_n'][0]} of {v['rank_of_n'][1]}; #{v['rank_in_2025']} in 2025)")
+              f"({v['rank_of_n'][0]} of {v['rank_of_n'][1]}, {window}; #{v['rank_in_2025']} in 2025)")
 
     for name in ("defense_deep_dive.json", "defense_rolling_epa.png", "defense_drive_efficiency.png"):
         print(f"Wrote {OUT_DIR / name}")

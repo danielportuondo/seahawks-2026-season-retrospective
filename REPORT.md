@@ -187,6 +187,13 @@ detail, so a few things are worth stating plainly:
   participation or pass-rusher data. For the same reason "pressure" throughout
   this project is a `sack OR qb_hit` proxy, which is narrower than a charted
   pressure and reads lower than published rates.
+- That pressure proxy is also the one metric here **not** ranked against the
+  full 1999–2025 window. nflverse's QB-hit attribution is not stable across the
+  cache: 2003–2005 contain zero QB hits and 1999–2002 roughly half the modern
+  rate, so in those years the proxy quietly degrades into a bare sack rate.
+  Ranking 2025 against all 861 team-seasons was comparing it to years where
+  half the metric did not exist, and flattered it. Pressure is now ranked from
+  2006 (640 team-seasons); every other metric still uses all 861.
 - Where a computed result disagreed with a published one, the computed value
   is reported and the disagreement is named. That happened twice, and in both
   cases the published direction was right while the specific number was not.
