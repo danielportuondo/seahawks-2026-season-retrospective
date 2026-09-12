@@ -5,6 +5,7 @@ prior runs) -- no live recomputation of any statistics.
 """
 
 import json
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -14,6 +15,9 @@ import streamlit as st
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUTS = ROOT / "outputs"
 FEATURES_CSV = ROOT / "data" / "processed" / "team_week_features.csv"
+
+sys.path.insert(0, str(ROOT / "src"))
+from phase7_decomposition import load_team_season_features
 
 st.set_page_config(
     page_title="Seahawks 2024→2025 Retrospective",
@@ -238,19 +242,19 @@ Team-week features from play-by-play: offensive/defensive EPA per play
 time excluded), turnover margin, red-zone TD rate, and pressure rate.
 """
     )
+    team_season = load_team_season_features()
     sea_season_avg = (
-        features[features["team"] == "SEA"]
-        .groupby("season")[
+        team_season[team_season["team"] == "SEA"]
+        .set_index("season")[
             [
                 "off_epa_per_play",
                 "def_epa_per_play_allowed",
-                "turnover_margin",
+                "turnover_margin_per_game",
                 "red_zone_td_pct",
                 "pressure_rate_allowed",
                 "pressure_rate_created",
             ]
         ]
-        .mean()
         .round(3)
     )
     st.dataframe(sea_season_avg, width="stretch")
@@ -344,8 +348,10 @@ to **{sea_decomp["sea_point_diff_per_game_2025"]:.2f}**
     st.header("Limitations")
     st.markdown(
         """
-- Phase 4–7's engineered features are aggregated with equal weight per
-  game, not weighted by play volume within a season.
+- Phase 4–7's EPA/play features are aggregated with equal weight per game,
+  not weighted by play volume within a season; red-zone TD% and pressure
+  rates are instead computed from summed season counts (not an average of
+  weekly percentages), so uneven weekly sample sizes don't distort the rate.
 - The regression decomposition is correlational, built on 64 observations,
   and does not control for strength of schedule, injuries, or other omitted
   context.

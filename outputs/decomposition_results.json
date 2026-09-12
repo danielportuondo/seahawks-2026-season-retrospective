@@ -9,7 +9,7 @@
     "primary_target": "point_diff_per_game (points_for - points_against, per game)",
     "secondary_target": "wins (regular-season wins, ties=0.5), reported as a rougher cross-check",
     "why_not_wins_primary": "Phase 2 showed SEA overachieved its Pythagorean win expectation both years, so wins already contain a tiebreaker/luck component that point differential does not capture by construction.",
-    "why_not_gradient_boosting": "xgboost/shap are not installed and CLAUDE.md requires asking before adding dependencies; at n=64 a tree ensemble would overfit and its SHAP attributions would be noisier than linear coefficients, which already ARE the decomposition.",
+    "why_not_gradient_boosting": "At n=64, a gradient-boosted model would overfit and its SHAP attributions would be noisier than linear coefficients, which already ARE the decomposition -- no separate explainability layer is needed on top of them.",
     "sklearn_cross_check_max_coef_diff": 2.275957200481571e-15
   },
   "ols_point_diff_per_game": {

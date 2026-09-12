@@ -172,14 +172,18 @@ season averages:
 | Offensive EPA/play | -0.044 | +0.146 |
 | Defensive EPA/play allowed | -0.007 | -0.245 |
 | Turnover margin/game | -0.118 | -0.059 |
-| Red zone TD% | 55.3% | 52.7% |
-| Pressure rate allowed | 17.2% | 12.2% |
-| Pressure rate created | 17.6% | 16.1% |
+| Red zone TD% | 57.1% | 54.2% |
+| Pressure rate allowed | 16.9% | 12.2% |
+| Pressure rate created | 17.5% | 16.1% |
 
-Note red-zone TD% and pressure rate created both *declined* slightly — a
-detail the narrative section calls out rather than smoothing over, and one
-the Phase 7 decomposition below independently confirms mattered little either
-way.
+Red-zone TD% and the two pressure rates are computed from summed season
+counts (touchdowns/trips, pressures/dropbacks) rather than an average of
+weekly percentages, so a 1-trip week doesn't get the same weight as a
+5-trip week — the same method the Phase 7 decomposition below uses, so the
+two sections' numbers agree exactly. Note red-zone TD% and pressure rate
+created both *declined* slightly — a detail the narrative section calls out
+rather than smoothing over, and one the Phase 7 decomposition below
+confirms mattered little either way.
 
 ### Defense anomaly detection (Phase 5)
 
@@ -270,10 +274,13 @@ differential captures.
 
 ### Limitations
 
-- Phase 4-7's engineered features are aggregated with **equal weight per
+- Phase 4-7's EPA/play features are aggregated with **equal weight per
   game**, not weighted by play volume within a season — a documented
   simplification, not an oversight, made to avoid re-reading raw play-by-play
-  a second time after Phase 4 already built the feature file.
+  a second time after Phase 4 already built the feature file. Red-zone TD%
+  and the two pressure rates use a different, count-weighted aggregation
+  instead (see Phase 4 above) so uneven weekly sample sizes don't distort
+  the rate.
 - The regression decomposition (Phase 7) is correlational, built on 64
   observations, and does not control for strength of schedule, injuries, or
   other omitted context.

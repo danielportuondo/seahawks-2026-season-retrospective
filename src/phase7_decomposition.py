@@ -6,11 +6,10 @@ Phase 4 built (EPA/play, turnover margin, red-zone TD%, pressure rate), then use
 coefficients to decompose SEA's actual 2024->2025 change into per-feature
 contributions -- how much of the jump does each stat "explain"?
 
-MODEL CHOICE: linear regression, not XGBoost+SHAP. HANDOFF.md offers either; this
-project has no xgboost/shap installed, and CLAUDE.md's hard rule is no new
-dependencies without asking first. More importantly, gradient boosting is the
-wrong tool at this sample size: the regression sample is 64 team-seasons (32
-teams x 2 seasons), and both EPA/play metrics are near-mechanical inputs to point
+MODEL CHOICE: linear regression, not XGBoost+SHAP. HANDOFF.md offers either;
+this project doesn't have xgboost/shap installed, and more importantly,
+gradient boosting is the wrong tool at this sample size: the regression sample
+is 64 team-seasons (32 teams x 2 seasons), and both EPA/play metrics are near-mechanical inputs to point
 differential (this is well established in public NFL analytics -- EPA/play
 differential alone typically explains >90% of point differential). A tree
 ensemble on 64 rows would overfit and its SHAP attributions would be noise,
@@ -89,6 +88,12 @@ GROUND_TRUTH_WINS = {2024: 10, 2025: 14}
 
 
 def load_team_season_features() -> pd.DataFrame:
+    """Team-week -> team-season aggregation described above.
+
+    Reused as-is by the dashboard's "Engineered features" table so that table
+    and this phase's per-feature decomposition always report the same numbers
+    for red_zone_td_pct / pressure_rate_allowed / pressure_rate_created.
+    """
     weekly = pd.read_csv(PROCESSED_DIR / "team_week_features.csv")
 
     agg = weekly.groupby(["season", "team"]).agg(
@@ -341,9 +346,9 @@ def main() -> None:
                 "does not capture by construction."
             ),
             "why_not_gradient_boosting": (
-                "xgboost/shap are not installed and CLAUDE.md requires asking before adding "
-                "dependencies; at n=64 a tree ensemble would overfit and its SHAP attributions "
-                "would be noisier than linear coefficients, which already ARE the decomposition."
+                "At n=64, a gradient-boosted model would overfit and its SHAP attributions "
+                "would be noisier than linear coefficients, which already ARE the decomposition "
+                "-- no separate explainability layer is needed on top of them."
             ),
             "sklearn_cross_check_max_coef_diff": max_coef_diff,
         },
