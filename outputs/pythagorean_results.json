@@ -1,0 +1,22 @@
+{
+  "2024": {
+    "points_for": 375.0,
+    "points_against": 368.0,
+    "games": 17,
+    "actual_wins": 10,
+    "actual_losses": 7,
+    "pythagorean_win_pct": 0.5112,
+    "pythagorean_expected_wins": 8.69,
+    "wins_over_expectation": 1.31
+  },
+  "2025": {
+    "points_for": 483.0,
+    "points_against": 292.0,
+    "games": 17,
+    "actual_wins": 14,
+    "actual_losses": 3,
+    "pythagorean_win_pct": 0.7672,
+    "pythagorean_expected_wins": 13.04,
+    "wins_over_expectation": 0.96
+  }
+}
