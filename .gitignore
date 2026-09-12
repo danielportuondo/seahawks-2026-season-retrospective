@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.env
+
+# Re-fetchable raw data cache — keep the pipeline reproducible instead of
+# committing large binaries. /data/processed (small engineered outputs) IS
+# committed since the dashboard reads it directly.
+/data/raw/*.parquet
