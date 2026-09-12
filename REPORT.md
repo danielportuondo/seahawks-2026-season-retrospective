@@ -157,6 +157,64 @@ that Seattle was lucky — the simulation assumes they were exactly as good as t
 were. It's an argument that a season is a small sample, and greatness and record
 are not the same measurement.
 
+### Jaxon Smith-Njigba did more with less than anyone on record
+
+Smith-Njigba led the NFL in receiving yards, won Offensive Player of the Year and
+was a unanimous first-team All-Pro. He is only the second Seahawk ever to lead the
+league in receiving, after Steve Largent, and the second to win the award, after
+Shaun Alexander in 2005. He broke the franchise single-season record by 490 yards.
+
+The number that separates him from everyone else is not the yardage itself. It is
+the yardage set against how rarely Seattle threw. Measured as receiving yards per
+team pass attempt, his **3.73 is first among all 3,504 receiver-seasons since
+1999** — ahead of Steve Smith's 2005, and ahead of every other thousand-yard
+season in the window. He took 33.9% of Seattle's targets (6th) and accounted for
+44.1% of its receiving yards (4th).
+
+The published framing of this is that every receiver with a bigger season had far
+more volume to work with, and that checks out exactly. Six receiver-seasons since
+1999 gained more than 1,793 yards, and the fewest team pass attempts any of them
+had was **566**. Seattle threw 481 times.
+
+There is deliberately no probability attached to this. See the
+[Players deep dive](#players-deep-dive-phase-17) for why the obvious framing —
+"how unlikely is that on so few pass attempts" — is not a question this data can
+answer, and what is reported instead.
+
+### Sam Darnold's worst season, and then none at all
+
+Darnold led the NFL in turnovers in 2025 with 20, then played three playoff games
+and committed none. The usual telling is that he settled down as the year went on.
+The career record says something better than that: **2025 was the worst turnover
+rate of his entire career** — 3.88 per 100 dropbacks, worse than his rookie year
+with the Jets, worse than any of the seasons that got him labelled a bust. He did
+not gradually clean it up and peak. He was at his most careless, and then he
+stopped entirely for a month.
+
+At his own 2025 rate, a clean run of 99 playoff dropbacks lands at about 2.1%.
+
+### The best defense in football had no star pass rusher
+
+Seattle allowed the fewest points in the NFL in 2025, the franchise's first
+scoring title since the Legion of Boom era, without a single player reaching eight
+sacks. Eighteen different Seahawks recorded one. The leading total was 7.0, shared
+three ways, and that ranks 934th of 10,820 individual seasons since 1999 — which
+is the point rather than a criticism. The team's leading sacker took just **14.9%
+of its sacks against a league average of 24.7%**, the 16th most evenly distributed
+pass rush of 861 team-seasons.
+
+The run defense was the other half: 3.73 yards per carry allowed, best in the
+league, up from 21st a year earlier, and 29 consecutive games without allowing an
+individual 100-yard rusher.
+
+Mike Macdonald is the reason most of this happened, and the part this project can
+measure least. He is the first head coach in NFL history to win a Super Bowl while
+calling his own defensive plays; the scheme he is famous for — disguise, simulated
+pressures, a sub-20% blitz rate — depends on participation data this cache does
+not have. Those facts are cited from reporting, not computed here, and the
+[Coach & scheme deep dive](#coach-and-scheme-deep-dive-phase-18) is explicit about
+which is which.
+
 ### The honest caveats
 
 This project tries to show its work rather than round off inconvenient
@@ -465,6 +523,95 @@ moves Seattle's turnover margin from **−1** to **−5.5** — a bounce compone
 **+4.5**. So the already-mediocre turnover margin was, if anything, flattered by
 how loose balls fell.
 
+### Players deep dive (Phase 17)
+
+`src/season_metrics.py` emits `receiver_season.csv` and `passer_season.csv`, one
+row per player-season for 1999–2025. The reference set for receivers is every
+regular-season receiver-season with **50+ targets: 3,504 of them**.
+
+**The denominator is the whole ballgame** for a target-share figure, and
+nflverse's `pass_attempt` flag is not the official one — it also fires on sacks
+and on two-point conversion passes. Left alone it gives Seattle 510 attempts
+against the league's official 481, which would deflate every share in the file.
+Removing both puts it on exactly 481 and puts Smith-Njigba's target share on
+33.9%, reproducing the published figure rather than inventing a third one. Three
+different denominators are already circulating in public coverage of this season.
+
+**A silent data trap, guarded.** nflverse ships two receiver keys and they are not
+interchangeable. `receiver_player_id` is null on *incomplete* passes for
+2003–2008 — 0.7% populated there, against 80%+ for `receiver_id` — so aggregating
+targets on it counts only catches for six seasons and inflates every catch rate in
+the window. This project uses `receiver_id`, asserts the incompletion coverage at
+build time, and has a test that fails if the window's catch rate ever drifts.
+
+**Why no probability is attached to the receiving season.** The tempting framing
+is "how unlikely is 1,793 yards on 481 pass attempts." It was considered and
+rejected on three grounds. Pass volume is not independent of the receiver —
+Seattle ran because it led, and led partly because he produced — so conditioning
+on it treats one half of a feedback loop as fixed. There is no honest null:
+receiving yards are heavy-tailed, correlated within games and correlated with game
+script, so a resample of targets would assume interchangeable trials and fail
+hardest in the tail, exactly where the answer would live. And the surprise is
+definitional — yards per team pass attempt is target share times yards per target,
+and he is 1st on the product, 6th on the share, but 53rd on yards per target. The
+rarity is concentration of opportunity, which is a coaching decision. Rankings
+against a stated reference set are reported instead.
+
+**Opportunity is measured by a proxy, and labelled as one.** The honest
+denominator for a receiver's chances is routes run, which is not in the
+play-by-play at any price. Target share over pass attempts conflates running a
+route with being on the field, and flatters a receiver who never leaves it.
+
+**Yards over expected is a shorter analysis than the rest.** It needs air yards,
+completion probability and expected YAC, none of which exist before 2006, so it is
+ranked over 2006–2025 (2,653 receiver-seasons) and says so. Those models are
+nflverse's, not this project's.
+
+For Darnold, the frame is keyed by player rather than team, so following him
+across five franchises is free. Turnovers are counted over **every snap he
+touched, not only dropbacks**: Phase 6 established that one of his 20 giveaways in
+2025 was an aborted snap coded as a run, and restricting the numerator to
+dropbacks returns 19 and silently disagrees with every published total. The rate
+keeps dropbacks as its denominator, which makes it very slightly conservative.
+
+### Coach and scheme deep dive (Phase 18)
+
+`defender_season.csv` carries one row per defender-season for the events the
+play-by-play actually attributes. Sacks are counted with **half-credits**, because
+`sack_player_id` alone misses roughly a tenth of sacks — the shared ones — and a
+rotational pass rush is exactly what that undercounts. With halves included
+Seattle's 2025 total reconciles to the published 47.0 exactly.
+
+Pass-rush concentration is described two ways: the share held by the team's
+leading sacker, and a Herfindahl index over the whole distribution. The second
+exists because the first only sees the leader, so a team with two co-leaders and a
+team with one leader plus a long tail can share a top-sacker share and separate
+here. Both are ranked against all 861 team-seasons.
+
+**No QB-hit or pressure statistic appears at player level.** nflverse's `qb_hit`
+attribution is absent entirely for 2003–2005, so it cannot carry a single
+denominator across this window — the same discontinuity that forced Phase 15's
+pressure percentile onto a 2006 baseline.
+
+**What is not computable, and is therefore not attempted**: blitz rate and
+pass-rusher counts; simulated pressures, stunts, coverage shells, man versus zone;
+pre- and post-snap safety rotation, which is to say disguise itself; snap counts
+and any coverage attribution; and individual offensive-line grades, since the
+play-by-play names no blockers at all.
+
+**No proxy for disguise is offered either.** Game-to-game outcome variance is
+sometimes put forward as one, but it is dominated by opponent quality and by a
+season being only seventeen games long, so it would measure schedule and sample
+size rather than deception. Seattle's 2025 dispersion is high for exactly those
+reasons. Presenting it as evidence of scheme would be the least defensible thing
+available in this dataset.
+
+The biographical claims about Mike Macdonald — first head coach to win a Super
+Bowl calling his own defensive plays, third in Coach of the Year voting behind
+Mike Vrabel, Baltimore's 2023 league lead in scoring defense, sacks and takeaways —
+are cited from published reporting and listed under `external_context_not_computed`
+in the output, the same treatment DVOA and blitz rate already get.
+
 ### Limitations
 
 - Phase 4-7's EPA/play features are aggregated with **equal weight per
@@ -485,3 +632,13 @@ how loose balls fell.
   used throughout are the project's confirmed ground truth (see
   `HANDOFF.md`); no narrative claims here are drawn from unverified external
   sources.
+- Player-level analysis (Phases 17–18) is bounded by what the play-by-play
+  attributes. Receiving and rushing work back to 1999; air yards and everything
+  derived from them only to 2006; QB hits are unusable before 2006 and absent
+  entirely for 2003–2005. Routes run, snap counts, participation, coverage and
+  blocking assignments do not exist in this data at all, which puts individual
+  offensive-line evaluation and any measurement of defensive disguise out of
+  reach regardless of how the question is posed.
+- Awards, voting margins, All-Pro selections and franchise or league "first
+  ever" records are external context throughout. They are cited, never
+  recomputed, and are listed as such in each phase's output JSON.

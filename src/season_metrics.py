@@ -105,7 +105,49 @@ PBP_COLS = [
     "total_away_score",
     "rusher_player_id",
     "rushing_yards",
+    # Player-level columns (Phases 17-18). `receiver_id` rather than
+    # `receiver_player_id`: see RECEIVER_ID_NOTE.
+    "receiver_id",
+    "receiver",
+    "passer_player_id",
+    "passer_player_name",
+    "pass_attempt",
+    "two_point_attempt",
+    "complete_pass",
+    "receiving_yards",
+    "pass_touchdown",
+    "rush_touchdown",
+    "air_yards",
+    "yards_after_catch",
+    "cp",
+    "xyac_mean_yardage",
+    "sack_player_id",
+    "sack_player_name",
+    "half_sack_1_player_id",
+    "half_sack_1_player_name",
+    "half_sack_2_player_id",
+    "half_sack_2_player_name",
+    "interception_player_id",
+    "interception_player_name",
+    "fumbled_1_player_id",
+    "solo_tackle_1_player_id",
+    "solo_tackle_1_player_name",
+    "rusher_player_name",
 ]
+
+RECEIVER_ID_NOTE = (
+    "nflverse ships two receiver keys and they are not interchangeable. "
+    "`receiver_player_id` is null on INCOMPLETE passes for 2003-2008 -- 0.7% "
+    "populated there against 80%+ for `receiver_id` -- so aggregating targets on "
+    "it silently counts only catches for six seasons and inflates every catch "
+    "rate in the window. This module uses `receiver_id` everywhere and asserts "
+    "the incompletion coverage, because the failure is silent rather than loud."
+)
+
+# Air yards, YAC, completion probability and expected YAC are all zero-coverage
+# before this season, so anything derived from them is a shorter analysis than
+# the 1999 baseline and has to say so.
+AIR_YARDS_FIRST_SEASON = 2006
 
 SCORING_DRIVE_RESULTS = {"Touchdown", "Field goal"}
 DRIVE_POINTS = {"Touchdown": 7, "Field goal": 3, "Opp touchdown": -7, "Safety": -2}
@@ -179,6 +221,37 @@ def percentile_rank(values, x) -> float:
     below = np.sum(v < x)
     ties = np.sum(v == x)
     return float(100.0 * (below + 0.5 * ties) / v.size)
+
+
+def top_share(values) -> float:
+    """Share of a total held by its single largest contributor.
+
+    Used to describe how concentrated a team's pass rush is. A team whose sacks
+    all come from one edge rusher scores near 1.0; a team that spreads them over
+    a rotation scores near 1/n.
+    """
+    v = np.asarray(values, dtype=float)
+    v = v[~np.isnan(v)]
+    total = v.sum()
+    if v.size == 0 or total <= 0:
+        return float("nan")
+    return float(v.max() / total)
+
+
+def herfindahl(values) -> float:
+    """Herfindahl concentration index of `values`, on 0-1.
+
+    Complements `top_share`: top_share only sees the leader, while this sees the
+    whole distribution, so a team with two co-leaders and a team with one leader
+    plus a long tail can share a top_share but separate here.
+    """
+    v = np.asarray(values, dtype=float)
+    v = v[~np.isnan(v)]
+    total = v.sum()
+    if v.size == 0 or total <= 0:
+        return float("nan")
+    shares = v / total
+    return float(np.sum(shares**2))
 
 
 def rolling_window_best(series, window: int, mode: str = "min") -> dict:
@@ -522,7 +595,21 @@ def game_efficiency_frame(pbp: pd.DataFrame) -> pd.DataFrame:
         {"off_epa_per_play": ("epa", "mean"), "off_success_rate": ("success", "mean")},
         {"def_epa_per_play_allowed": ("epa", "mean"), "def_success_rate_allowed": ("success", "mean")},
     )
-    return unfiltered.merge(filtered, on=keys + ["team"], how="outer")
+    out = unfiltered.merge(filtered, on=keys + ["team"], how="outer")
+
+    # The individual-100-yard-rusher streak is a per-game fact about the leading
+    # opposing back, which no season-level column can reconstruct afterwards.
+    runs = pbp[(pbp["rush_attempt"] == 1) & pbp["rusher_player_id"].notna()]
+    per_rusher = (
+        runs.groupby(keys + ["defteam", "rusher_player_id"])["rushing_yards"].sum().reset_index()
+    )
+    opp_best = (
+        per_rusher.groupby(keys + ["defteam"])["rushing_yards"]
+        .max()
+        .reset_index(name="opp_leading_rusher_yards")
+        .rename(columns={"defteam": "team"})
+    )
+    return out.merge(opp_best, on=keys + ["team"], how="left")
 
 
 def focus_wp_curve(pbp: pd.DataFrame) -> pd.DataFrame:
@@ -553,7 +640,195 @@ def focus_wp_curve(pbp: pd.DataFrame) -> pd.DataFrame:
     return df[cols].sort_values(["game_id", "seconds_elapsed"]).reset_index(drop=True)
 
 
-def build_season(season: int) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+# --------------------------------------------------------------------------
+# Player-level frames (Phases 17-18)
+# --------------------------------------------------------------------------
+
+
+def receiver_season_frame(pbp: pd.DataFrame) -> pd.DataFrame:
+    """One row per receiver-season, plus the team denominator each share needs.
+
+    A "target" is a pass attempt carrying an identified intended receiver.
+
+    THE DENOMINATOR IS THE WHOLE BALLGAME for a target-share number, and nflverse's
+    `pass_attempt` flag is not the official one: it also fires on sacks and on
+    two-point conversion passes. Left alone it gives SEA 2025 510 attempts against
+    the league's official 481, which would quietly deflate every share in this
+    file. Removing both puts it on exactly 481 and puts Smith-Njigba's share on
+    33.9%, reproducing the published figure rather than inventing a third one --
+    three different denominators are already circulating in public coverage.
+    """
+    att = pbp[
+        (pbp["pass_attempt"] == 1)
+        & (pbp["sack"] != 1)
+        & (pbp["two_point_attempt"] != 1)
+        & pbp["posteam"].notna()
+    ].copy()
+
+    # See RECEIVER_ID_NOTE. Fails loudly if the wrong key is ever swapped back in.
+    inc = att[att["complete_pass"] != 1]
+    if len(inc):
+        coverage = float(inc["receiver_id"].notna().mean())
+        assert coverage > 0.5, (
+            f"receiver_id covers only {coverage:.1%} of incompletions in "
+            f"{int(att['season'].iloc[0])} -- wrong receiver key? {RECEIVER_ID_NOTE}"
+        )
+
+    team_totals = (
+        att.groupby(["season", "season_type", "posteam"])
+        .agg(team_pass_attempts=("pass_attempt", "size"),
+             team_receiving_yards=("receiving_yards", "sum"))
+        .reset_index()
+        .rename(columns={"posteam": "team"})
+    )
+
+    tgt = att[att["receiver_id"].notna()].copy()
+    tgt["expected_yards"] = tgt["cp"] * (
+        tgt["air_yards"] + tgt["xyac_mean_yardage"].fillna(0.0)
+    )
+
+    per = (
+        tgt.groupby(["season", "season_type", "posteam", "receiver_id", "receiver"])
+        .agg(
+            targets=("pass_attempt", "size"),
+            receptions=("complete_pass", "sum"),
+            receiving_yards=("receiving_yards", "sum"),
+            receiving_tds=("pass_touchdown", "sum"),
+            air_yards=("air_yards", "sum"),
+            yards_after_catch=("yards_after_catch", "sum"),
+            expected_yards=("expected_yards", "sum"),
+            games=("game_id", "nunique"),
+        )
+        .reset_index()
+        .rename(columns={"posteam": "team"})
+    )
+
+    per = per.merge(team_totals, on=["season", "season_type", "team"], how="left")
+    per["target_share"] = per["targets"] / per["team_pass_attempts"]
+    per["yards_per_team_pass_attempt"] = per["receiving_yards"] / per["team_pass_attempts"]
+    per["team_receiving_yards_share"] = per["receiving_yards"] / per["team_receiving_yards"]
+    per["yards_per_target"] = per["receiving_yards"] / per["targets"]
+    per["yards_over_expected"] = per["receiving_yards"] - per["expected_yards"]
+    return per
+
+
+def passer_season_frame(pbp: pd.DataFrame) -> pd.DataFrame:
+    """One row per passer-season, keyed on the dropback definition Phase 6 uses.
+
+    Dropbacks are scramble-inclusive (the passer on a dropback, or the rusher when
+    the dropback became a scramble), and lost fumbles are keyed on the FUMBLING
+    player rather than the offense, so a running back's lost fumble is not charged
+    to the quarterback. Both choices are Phase 6's.
+
+    TURNOVERS ARE COUNTED OVER EVERY SNAP THE PLAYER TOUCHED, NOT ONLY DROPBACKS.
+    Phase 6 found that one of Darnold's 20 giveaways in 2025 -- a week-10 aborted
+    snap -- is coded as a run and therefore sits outside the dropback set.
+    Restricting the numerator to dropbacks returns 19 and silently disagrees with
+    every published total. The rate keeps dropbacks as its denominator (that is
+    the exposure being modelled), so the rate is very slightly conservative by
+    construction, which is the direction to err in.
+    """
+    off = pbp[pbp["posteam"].notna()].copy()
+    off["player_id"] = off["passer_player_id"].fillna(off["rusher_player_id"])
+    off["player_name"] = off["passer_player_name"].fillna(off["rusher_player_name"])
+    off = off[off["player_id"].notna()]
+    off["lost_own_fumble"] = (
+        (off["fumble_lost"] == 1) & (off["fumbled_1_player_id"] == off["player_id"])
+    ).astype(int)
+    off["is_dropback"] = (off["qb_dropback"] == 1).astype(int)
+
+    keys = ["season", "season_type", "posteam", "player_id", "player_name"]
+    per = (
+        off.groupby(keys)
+        .agg(
+            dropbacks=("is_dropback", "sum"),
+            interceptions=("interception", "sum"),
+            fumbles_lost=("lost_own_fumble", "sum"),
+            sacks_taken=("sack", "sum"),
+            games=("game_id", "nunique"),
+        )
+        .reset_index()
+        .rename(columns={"posteam": "team"})
+    )
+    epa = (
+        off[off["is_dropback"] == 1]
+        .groupby(keys)["epa"]
+        .mean()
+        .reset_index(name="epa_per_dropback")
+        .rename(columns={"posteam": "team"})
+    )
+    per = per.merge(epa, on=["season", "season_type", "team", "player_id", "player_name"], how="left")
+    per = per[per["dropbacks"] > 0]
+    per["turnovers"] = per["interceptions"] + per["fumbles_lost"]
+    per["turnover_rate_per_dropback"] = per["turnovers"] / per["dropbacks"]
+    return per
+
+
+def defender_season_frame(pbp: pd.DataFrame) -> pd.DataFrame:
+    """One row per defender-season for the events the pbp actually attributes.
+
+    Sacks are counted as full plus half credits, because `sack_player_id` alone
+    misses roughly a tenth of sacks -- the shared ones -- and a pass rush measured
+    without them understates exactly the rotational defenses this is meant to
+    describe. Tackles, interceptions and forced fumbles are attributed reliably
+    from 1999; QB hits are NOT, which is why no pressure statistic appears here
+    (see phase15_defense.QB_HIT_FIRST_SEASON).
+    """
+    keys = ["season", "season_type", "defteam"]
+    credits = []
+    for id_col, name_col, weight in [
+        ("sack_player_id", "sack_player_name", 1.0),
+        ("half_sack_1_player_id", "half_sack_1_player_name", 0.5),
+        ("half_sack_2_player_id", "half_sack_2_player_name", 0.5),
+    ]:
+        part = pbp[pbp[id_col].notna() & pbp["defteam"].notna()][keys + [id_col, name_col]]
+        part = part.rename(columns={id_col: "player_id", name_col: "player_name"})
+        part["sacks"] = weight
+        credits.append(part)
+    sacks = pd.concat(credits, ignore_index=True)
+    sacks = (
+        sacks.groupby(keys + ["player_id", "player_name"])["sacks"].sum().reset_index()
+    )
+
+    def _event(id_col: str, name_col: str, out: str) -> pd.DataFrame:
+        part = pbp[pbp[id_col].notna() & pbp["defteam"].notna()][keys + [id_col, name_col]]
+        part = part.rename(columns={id_col: "player_id", name_col: "player_name"})
+        return part.groupby(keys + ["player_id", "player_name"]).size().reset_index(name=out)
+
+    ints = _event("interception_player_id", "interception_player_name", "interceptions")
+    solo = _event("solo_tackle_1_player_id", "solo_tackle_1_player_name", "solo_tackles")
+
+    per = sacks.merge(ints, on=keys + ["player_id", "player_name"], how="outer")
+    per = per.merge(solo, on=keys + ["player_id", "player_name"], how="outer")
+    per = per.rename(columns={"defteam": "team"})
+    for col in ("sacks", "interceptions", "solo_tackles"):
+        per[col] = per[col].fillna(0)
+    # Everyone who ever made a tackle would triple the committed file for no
+    # analytical gain; the pass-rush and takeaway story needs the contributors.
+    return per[(per["sacks"] > 0) | (per["interceptions"] > 0)]
+
+
+def rusher_season_frame(pbp: pd.DataFrame) -> pd.DataFrame:
+    """One row per rusher-season. Starts are NOT in the pbp -- see Phase 17."""
+    run = pbp[(pbp["rush_attempt"] == 1) & pbp["rusher_player_id"].notna()]
+    per = (
+        run.groupby(["season", "season_type", "posteam", "rusher_player_id", "rusher_player_name"])
+        .agg(
+            carries=("rush_attempt", "size"),
+            rushing_yards=("rushing_yards", "sum"),
+            rushing_tds=("rush_touchdown", "sum"),
+            epa_per_rush=("epa", "mean"),
+            games=("game_id", "nunique"),
+        )
+        .reset_index()
+        .rename(columns={"posteam": "team", "rusher_player_id": "player_id",
+                         "rusher_player_name": "player_name"})
+    )
+    per["yards_per_carry"] = per["rushing_yards"] / per["carries"]
+    return per
+
+
+def build_season(season: int) -> dict[str, pd.DataFrame]:
     pbp = load_pbp(season)
     pbp = pbp[pbp["season_type"].isin(["REG", "POST"])]
     for col in ("posteam", "defteam", "home_team", "away_team"):
@@ -571,20 +846,28 @@ def build_season(season: int) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
         frame = frame.merge(build(pbp), on=["season", "season_type", "team"], how="outer")
     frame = frame.merge(control_metrics(gc), on=["season", "season_type", "team"], how="outer")
 
-    return frame, gc, game_efficiency_frame(pbp)
+    return {
+        "advanced": frame,
+        "control": gc,
+        "game_efficiency": game_efficiency_frame(pbp),
+        "receiver": receiver_season_frame(pbp),
+        "passer": passer_season_frame(pbp),
+        "defender": defender_season_frame(pbp),
+        "rusher": rusher_season_frame(pbp),
+    }
 
 
 def main() -> None:
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
-    frames, controls, game_effs = [], [], []
+    parts: dict[str, list[pd.DataFrame]] = {}
     for season in SEASONS:
-        frame, gc, ge = build_season(season)
-        frames.append(frame)
-        controls.append(gc)
-        game_effs.append(ge)
-        reg = frame[frame["season_type"] == "REG"]
-        print(f"{season}: {len(reg)} teams (REG), {len(frame)} team-season-phase rows")
+        built = build_season(season)
+        for key, df in built.items():
+            parts.setdefault(key, []).append(df)
+        reg = built["advanced"][built["advanced"]["season_type"] == "REG"]
+        print(f"{season}: {len(reg)} teams (REG), {len(built['advanced'])} team-season-phase rows")
 
+    frames, controls, game_effs = parts["advanced"], parts["control"], parts["game_efficiency"]
     advanced = pd.concat(frames, ignore_index=True)
     advanced = advanced[advanced["team"].notna()].sort_values(["season", "season_type", "team"])
     advanced = advanced.merge(scoring_frame(), on=["season", "season_type", "team"], how="left")
@@ -617,6 +900,18 @@ def main() -> None:
 
     curve = pd.read_csv(PROCESSED_DIR / "focus_wp_curve.csv")
     print(f"focus_wp_curve ({FOCUS_TEAM} {FOCUS_SEASON}): {curve.shape} -> {PROCESSED_DIR / 'focus_wp_curve.csv'}")
+
+    for key, name, sort_keys in [
+        ("receiver", "receiver_season.csv", ["season", "season_type", "team", "receiver_id"]),
+        ("passer", "passer_season.csv", ["season", "season_type", "team", "player_id"]),
+        ("defender", "defender_season.csv", ["season", "season_type", "team", "player_id"]),
+        ("rusher", "rusher_season.csv", ["season", "season_type", "team", "player_id"]),
+    ]:
+        df = pd.concat(parts[key], ignore_index=True)
+        df = df[df["team"].notna()].sort_values(sort_keys).round(5)
+        path = PROCESSED_DIR / name
+        df.to_csv(path, index=False)
+        print(f"{name.removesuffix('.csv')}: {df.shape} -> {path}")
 
     sea_row = advanced[
         (advanced["team"] == FOCUS_TEAM)

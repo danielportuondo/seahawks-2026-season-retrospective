@@ -14,7 +14,7 @@ decomposition).
 
 ![Dashboard screenshot](docs/dashboard_screenshot.png)
 
-A three-tab Streamlit app:
+A five-tab Streamlit app:
 
 - **The Story** — plain-language narrative, headline charts, an interactive
   season-trend explorer.
@@ -22,21 +22,31 @@ A three-tab Streamlit app:
   since 1999. Interactive metric explorer, per-game win-probability curves,
   and a champion comparison you can re-rank between the published statistic
   and the clock-weighted version.
+- **Players** — Jaxon Smith-Njigba against all 3,504 receiver-seasons since
+  1999 (first all-time in receiving yards per team pass attempt), and Sam
+  Darnold's full career turnover arc across five franchises.
+- **Coach & Scheme** — how Seattle's sacks were distributed, the 2024→2025
+  change in the same defensive unit, and an explicit list of what this data
+  cannot say about Mike Macdonald's scheme.
 - **Methodology** — the statistical detail behind all of it, including a
   claim-by-claim table of which published figures the data supports.
 
 ![All-Time Great? tab](docs/dashboard_alltime.png)
+
+![Players tab](docs/dashboard_players.png)
+
+![Coach & Scheme tab](docs/dashboard_coach.png)
 
 Reads only from `outputs/` and `data/processed/` — no live recomputation.
 
 ## Repo layout
 
 - `data/raw/` — cached raw pull from nflverse (not committed; re-fetchable via `src/data_acquisition.py`)
-- `data/processed/` — engineered feature files used by later analysis and the dashboard
+- `data/processed/` — engineered feature files used by later analysis and the dashboard (team-season tables plus per-receiver, per-passer, per-defender and per-rusher season tables)
 - `src/` — pipeline and analysis code, one script per phase
 - `outputs/` — analysis results (JSON) and charts
 - `dashboard/` — Streamlit app (`app.py`)
-- `tests/` — unit tests for the pure calculation functions (Pythagorean expectation, turnover-probability model, OLS decomposition, clock-weighted margin / percentile / rolling-window kernels)
+- `tests/` — unit tests for the pure calculation functions (Pythagorean expectation, turnover-probability model, OLS decomposition, clock-weighted margin / percentile / rolling-window / concentration kernels, plus fixture tests guarding the player-frame denominators)
 - `docs/` — README assets
 - `REFERENCES.md` — data source and citation log
 - `HANDOFF.md` — the original phase-by-phase project plan
@@ -70,13 +80,18 @@ uv run python src/phase13_historical_baseline.py  # Phase 13: percentile rank vs
 uv run python src/phase14_game_control.py  # Phase 14: clock-weighted margin and game control
 uv run python src/phase15_defense.py       # Phase 15: rolling defensive EPA vs every team-season
 uv run python src/phase16_counterfactual.py # Phase 16: Pythagorean, Monte Carlo, turnover luck
+uv run python src/phase17_players.py       # Phase 17: Smith-Njigba and Darnold vs every player-season
+uv run python src/phase18_scheme.py        # Phase 18: pass-rush distribution and the 2024->2025 defense
 ```
 
 Phases 5 and 6 only depend on Phase 1's cached data and can run in either
 order; Phases 2–4 and 7 depend on the outputs before them in the list.
 
-Phases 13–16 all read `season_metrics.py`'s committed CSVs, so once those exist
-the four can run in any order. Note that `data_acquisition.py` now pulls
+Phases 13–18 all read `season_metrics.py`'s committed CSVs, so once those exist
+the six can run in any order. `season_metrics.py` is the only module that opens
+raw play-by-play; it emits the team tables plus four player-level tables
+(`receiver_season.csv`, `passer_season.csv`, `defender_season.csv`,
+`rusher_season.csv`) that Phases 17–18 read. Note that `data_acquisition.py` now pulls
 **1999–2025** rather than 2010–2025 — the first run after this change downloads
 eleven additional seasons of play-by-play (cached per season, so it resumes
 cleanly if interrupted).
@@ -96,6 +111,6 @@ uvx ruff check .
 
 ## Status
 
-Phases 1–16 complete. `HANDOFF.md` holds the original phase-by-phase plan
-(through Phase 11); Phases 12–16 — the visual redesign and the all-time
-comparison — were scoped afterwards.
+Phases 1–18 complete. `HANDOFF.md` holds the original phase-by-phase plan
+(through Phase 11); Phases 12–18 — the visual redesign, the all-time
+comparison, and the player and coach deep dives — were scoped afterwards.

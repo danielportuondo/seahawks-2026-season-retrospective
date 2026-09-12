@@ -1,0 +1,361 @@
+{
+  "methodology": {
+    "team_seasons": 861,
+    "window": [
+      1999,
+      2025
+    ],
+    "sack_credit": "Full sacks plus half-sack credits. sack_player_id alone misses roughly a tenth of sacks -- the shared ones -- and a rotational pass rush is exactly what that undercounts. With halves included SEA 2025 reconciles to the published 47.0 exactly.",
+    "distinct_sackers_definition": "Players credited with at least a half-sack. A player with only a shared sack counts, which is why this can exceed a published count of whole-sack contributors.",
+    "not_computable": [
+      "Blitz rate and pass-rusher counts -- no participation data in the cache",
+      "Simulated pressures, stunts, coverage shells, man vs zone",
+      "Pre-snap or post-snap safety rotation, i.e. disguise itself",
+      "Snap counts, coverage snaps, targets or completions allowed per defender",
+      "Individual offensive-line grades -- the play-by-play names no blockers"
+    ],
+    "no_disguise_proxy": "No proxy for disguise is offered. Game-to-game outcome variance is sometimes used as one, but it is dominated by opponent quality and by having only seventeen games, so it would measure schedule and sample size rather than deception.",
+    "qb_hits_excluded": "No QB-hit or pressure statistic appears at player level. nflverse qb_hit attribution is absent entirely for 2003-2005, so it cannot carry a single denominator across this window (see Phase 15).",
+    "external_context_not_computed": [
+      "First head coach to win a Super Bowl while calling his own defensive plays",
+      "Coach of the Year voting; Macdonald finished third behind Mike Vrabel",
+      "Baltimore's 2023 league lead in scoring defense, sacks and takeaways",
+      "Blitz rate (~19-22%) and charted pressure rate, both from SIS/PFF"
+    ]
+  },
+  "pass_rush_distribution": {
+    "top_sacker_share": {
+      "label": "Share of sacks by the team's leading sacker",
+      "value": 0.1489,
+      "rank_of_n": [
+        16,
+        861
+      ],
+      "percentile": 98.1,
+      "league_mean_2025": 0.2468
+    },
+    "herfindahl": {
+      "label": "Sack concentration (Herfindahl)",
+      "value": 0.101,
+      "rank_of_n": [
+        65,
+        861
+      ],
+      "percentile": 92.5,
+      "league_mean_2025": 0.1357
+    },
+    "distinct_sackers": {
+      "label": "Players with at least a half-sack",
+      "value": 18.0,
+      "rank_of_n": [
+        5,
+        861
+      ],
+      "percentile": 98.7,
+      "league_mean_2025": 13.9062
+    },
+    "team_sacks": {
+      "label": "Team sacks",
+      "value": 47.0,
+      "rank_of_n": [
+        93,
+        861
+      ],
+      "percentile": 87.9,
+      "league_mean_2025": 39.9375
+    },
+    "best_individual": {
+      "label": "Best individual sack total on the team",
+      "value": 7.0,
+      "rank_of_n": [
+        934,
+        10820
+      ],
+      "note": "Ranked among every player-season with at least a half-sack since 1999."
+    }
+  },
+  "sea_2025_pass_rush": [
+    {
+      "player": "L.Williams",
+      "sacks": 7.0,
+      "interceptions": 0,
+      "solo_tackles": 32
+    },
+    {
+      "player": "B.Murphy",
+      "sacks": 7.0,
+      "interceptions": 0,
+      "solo_tackles": 20
+    },
+    {
+      "player": "U.Nwosu",
+      "sacks": 7.0,
+      "interceptions": 0,
+      "solo_tackles": 15
+    },
+    {
+      "player": "D.Lawrence",
+      "sacks": 6.0,
+      "interceptions": 0,
+      "solo_tackles": 23
+    },
+    {
+      "player": "D.Thomas",
+      "sacks": 3.5,
+      "interceptions": 1,
+      "solo_tackles": 45
+    },
+    {
+      "player": "N.Emmanwori",
+      "sacks": 2.5,
+      "interceptions": 1,
+      "solo_tackles": 55
+    },
+    {
+      "player": "D.Hall",
+      "sacks": 2.0,
+      "interceptions": 0,
+      "solo_tackles": 11
+    },
+    {
+      "player": "J.Reed",
+      "sacks": 2.0,
+      "interceptions": 0,
+      "solo_tackles": 11
+    },
+    {
+      "player": "T.Knight",
+      "sacks": 2.0,
+      "interceptions": 0,
+      "solo_tackles": 33
+    },
+    {
+      "player": "B.Mafe",
+      "sacks": 2.0,
+      "interceptions": 0,
+      "solo_tackles": 11
+    },
+    {
+      "player": "T.Okada",
+      "sacks": 1.5,
+      "interceptions": 1,
+      "solo_tackles": 44
+    },
+    {
+      "player": "J.Love",
+      "sacks": 1.0,
+      "interceptions": 1,
+      "solo_tackles": 22
+    },
+    {
+      "player": "P.O'Connell",
+      "sacks": 1.0,
+      "interceptions": 0,
+      "solo_tackles": 8
+    },
+    {
+      "player": "E.Jones",
+      "sacks": 0.5,
+      "interceptions": 5,
+      "solo_tackles": 58
+    },
+    {
+      "player": "J.Jobe",
+      "sacks": 0.5,
+      "interceptions": 1,
+      "solo_tackles": 39
+    },
+    {
+      "player": "D.Bell",
+      "sacks": 0.5,
+      "interceptions": 0,
+      "solo_tackles": 5
+    },
+    {
+      "player": "Ja.Reed",
+      "sacks": 0.5,
+      "interceptions": 0,
+      "solo_tackles": 0
+    },
+    {
+      "player": "D.Witherspoon",
+      "sacks": 0.5,
+      "interceptions": 1,
+      "solo_tackles": 48
+    }
+  ],
+  "sea_2025_takeaway_leaders": [
+    {
+      "player": "E.Jones",
+      "interceptions": 5,
+      "sacks": 0.5,
+      "solo_tackles": 58
+    },
+    {
+      "player": "C.Bryant",
+      "interceptions": 4,
+      "sacks": 0.0,
+      "solo_tackles": 37
+    },
+    {
+      "player": "D.Kendrick",
+      "interceptions": 2,
+      "sacks": 0.0,
+      "solo_tackles": 2
+    },
+    {
+      "player": "J.Love",
+      "interceptions": 1,
+      "sacks": 1.0,
+      "solo_tackles": 22
+    },
+    {
+      "player": "T.Woolen",
+      "interceptions": 1,
+      "sacks": 0.0,
+      "solo_tackles": 32
+    },
+    {
+      "player": "J.Jobe",
+      "interceptions": 1,
+      "sacks": 0.5,
+      "solo_tackles": 39
+    },
+    {
+      "player": "T.Okada",
+      "interceptions": 1,
+      "sacks": 1.5,
+      "solo_tackles": 44
+    },
+    {
+      "player": "D.Thomas",
+      "interceptions": 1,
+      "sacks": 3.5,
+      "solo_tackles": 45
+    },
+    {
+      "player": "D.Witherspoon",
+      "interceptions": 1,
+      "sacks": 0.5,
+      "solo_tackles": 48
+    },
+    {
+      "player": "N.Emmanwori",
+      "interceptions": 1,
+      "sacks": 2.5,
+      "solo_tackles": 55
+    }
+  ],
+  "rushing_wall": {
+    "games_without_allowing_a_100_yard_rusher": 29,
+    "threshold_yards": 100,
+    "last_allowed": {
+      "season": 2024,
+      "week": 8,
+      "yards": 111.0
+    },
+    "note": "Counted over regular and postseason games in play-by-play order, so the streak runs across the offseason the way the published figure does."
+  },
+  "year_over_year": {
+    "def_epa_per_play_allowed": {
+      "2024": {
+        "value": -0.0155,
+        "rank_in_season": 10,
+        "rank_all_time": [
+          392,
+          861
+        ]
+      },
+      "2025": {
+        "value": -0.1254,
+        "rank_in_season": 1,
+        "rank_all_time": [
+          58,
+          861
+        ]
+      },
+      "label": "Defensive EPA/play allowed",
+      "change": -0.1099
+    },
+    "points_against_per_game": {
+      "2024": {
+        "value": 21.6471,
+        "rank_in_season": 11,
+        "rank_all_time": [
+          407,
+          861
+        ]
+      },
+      "2025": {
+        "value": 17.1765,
+        "rank_in_season": 1,
+        "rank_all_time": [
+          75,
+          861
+        ]
+      },
+      "label": "Points allowed per game",
+      "change": -4.4706
+    },
+    "def_yards_per_carry_allowed": {
+      "2024": {
+        "value": 4.5209,
+        "rank_in_season": 21,
+        "rank_all_time": [
+          676,
+          861
+        ]
+      },
+      "2025": {
+        "value": 3.7303,
+        "rank_in_season": 1,
+        "rank_all_time": [
+          112,
+          861
+        ]
+      },
+      "label": "Yards per carry allowed",
+      "change": -0.7906
+    },
+    "def_explosive_rate_allowed": {
+      "2024": {
+        "value": 0.1199,
+        "rank_in_season": 5,
+        "rank_all_time": [
+          197,
+          861
+        ]
+      },
+      "2025": {
+        "value": 0.0956,
+        "rank_in_season": 2,
+        "rank_all_time": [
+          12,
+          861
+        ]
+      },
+      "label": "Explosive play rate allowed",
+      "change": -0.0243
+    },
+    "def_success_rate_allowed": {
+      "2024": {
+        "value": 0.4407,
+        "rank_in_season": 16,
+        "rank_all_time": [
+          564,
+          861
+        ]
+      },
+      "2025": {
+        "value": 0.3947,
+        "rank_in_season": 3,
+        "rank_all_time": [
+          149,
+          861
+        ]
+      },
+      "label": "Success rate allowed",
+      "change": -0.046
+    }
+  }
+}

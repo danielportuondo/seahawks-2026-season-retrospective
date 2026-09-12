@@ -1,0 +1,486 @@
+{
+  "methodology": {
+    "receiver_reference_set": 3504,
+    "receiver_reference_window": [
+      1999,
+      2025
+    ],
+    "min_targets": 50,
+    "season_type": "REG for all reference sets; postseason reported separately",
+    "target_denominator": "Team pass attempts, excluding sacks and two-point conversions. nflverse's pass_attempt flag includes both; leaving them in gives SEA 2025 510 attempts against the official 481 and deflates every share in the file.",
+    "routes_limitation": "The honest denominator for opportunity is routes run, which is NOT in the play-by-play -- this cache carries no participation data. Target share over pass attempts conflates running a route with being on the field, and flatters a receiver who never leaves it.",
+    "no_probability_on_yardage": "No probability is attached to the receiving season. Pass volume is jointly determined with the receiving production it would be conditioning on, and receiving yards violate the independence a count model would need. Rankings against a stated reference set are reported instead.",
+    "yards_over_expected_window": "Yards over expected uses air yards, completion probability and expected YAC, none of which exist before 2006, so it is ranked over 2006-2025 only. The underlying models are nflverse's.",
+    "external_context_not_computed": [
+      "AP Offensive Player of the Year voting (272 points, 14 first-place votes)",
+      "All-Pro and Pro Bowl selections",
+      "Darnold's oblique injury and contract terms"
+    ]
+  },
+  "smith_njigba": {
+    "season": {
+      "targets": 163,
+      "receptions": 119,
+      "receiving_yards": 1793,
+      "receiving_tds": 10,
+      "team_pass_attempts": 481,
+      "games": 17
+    },
+    "rankings": {
+      "yards_per_team_pass_attempt": {
+        "label": "Receiving yards per team pass attempt",
+        "value": 3.7277,
+        "rank_of_n": [
+          1,
+          3504
+        ],
+        "percentile": 99.99,
+        "reference_window": [
+          1999,
+          2025
+        ],
+        "top5": [
+          {
+            "season": 2025,
+            "team": "SEA",
+            "receiver": "J.Smith-Njigba",
+            "value": 3.7277
+          },
+          {
+            "season": 2005,
+            "team": "CAR",
+            "receiver": "S.Smith",
+            "value": 3.4811
+          },
+          {
+            "season": 2008,
+            "team": "CAR",
+            "receiver": "S.Smith",
+            "value": 3.4227
+          },
+          {
+            "season": 2021,
+            "team": "LA",
+            "receiver": "C.Kupp",
+            "value": 3.2076
+          },
+          {
+            "season": 2008,
+            "team": "ATL",
+            "receiver": "R.White",
+            "value": 3.1843
+          }
+        ]
+      },
+      "target_share": {
+        "label": "Target share (of team pass attempts)",
+        "value": 0.3389,
+        "rank_of_n": [
+          6,
+          3504
+        ],
+        "percentile": 99.84,
+        "reference_window": [
+          1999,
+          2025
+        ],
+        "top5": [
+          {
+            "season": 2012,
+            "team": "CHI",
+            "receiver": "B.Marshall",
+            "value": 0.4
+          },
+          {
+            "season": 1999,
+            "team": "IND",
+            "receiver": "M.Harrison",
+            "value": 0.3541
+          },
+          {
+            "season": 2002,
+            "team": "IND",
+            "receiver": "M.Harrison",
+            "value": 0.3469
+          },
+          {
+            "season": 2008,
+            "team": "ATL",
+            "receiver": "R.White",
+            "value": 0.341
+          },
+          {
+            "season": 2006,
+            "team": "HOU",
+            "receiver": "A.Johnson",
+            "value": 0.341
+          }
+        ]
+      },
+      "receiving_yards": {
+        "label": "Receiving yards",
+        "value": 1793.0,
+        "rank_of_n": [
+          7,
+          3504
+        ],
+        "percentile": 99.81,
+        "reference_window": [
+          1999,
+          2025
+        ],
+        "top5": [
+          {
+            "season": 2012,
+            "team": "DET",
+            "receiver": "C.Johnson",
+            "value": 1964.0
+          },
+          {
+            "season": 2021,
+            "team": "LA",
+            "receiver": "C.Kupp",
+            "value": 1947.0
+          },
+          {
+            "season": 2015,
+            "team": "ATL",
+            "receiver": "J.Jones",
+            "value": 1871.0
+          },
+          {
+            "season": 2015,
+            "team": "PIT",
+            "receiver": "A.Brown",
+            "value": 1841.0
+          },
+          {
+            "season": 2022,
+            "team": "MIN",
+            "receiver": "J.Jefferson",
+            "value": 1809.0
+          }
+        ]
+      },
+      "team_receiving_yards_share": {
+        "label": "Share of team receiving yards",
+        "value": 0.4413,
+        "rank_of_n": [
+          4,
+          3504
+        ],
+        "percentile": 99.9,
+        "reference_window": [
+          1999,
+          2025
+        ],
+        "top5": [
+          {
+            "season": 2012,
+            "team": "CHI",
+            "receiver": "B.Marshall",
+            "value": 0.4572
+          },
+          {
+            "season": 2005,
+            "team": "CAR",
+            "receiver": "S.Smith",
+            "value": 0.4485
+          },
+          {
+            "season": 2005,
+            "team": "WAS",
+            "receiver": "S.Moss",
+            "value": 0.4432
+          },
+          {
+            "season": 2025,
+            "team": "SEA",
+            "receiver": "J.Smith-Njigba",
+            "value": 0.4413
+          },
+          {
+            "season": 1999,
+            "team": "JAX",
+            "receiver": "J.Smith",
+            "value": 0.4403
+          }
+        ]
+      },
+      "yards_per_target": {
+        "label": "Yards per target",
+        "value": 11.0,
+        "rank_of_n": [
+          53,
+          3504
+        ],
+        "percentile": 98.49,
+        "reference_window": [
+          1999,
+          2025
+        ],
+        "top5": [
+          {
+            "season": 2008,
+            "team": "NO",
+            "receiver": "D.Henderson",
+            "value": 13.9123
+          },
+          {
+            "season": 2006,
+            "team": "NO",
+            "receiver": "D.Henderson",
+            "value": 13.7963
+          },
+          {
+            "season": 2018,
+            "team": "SEA",
+            "receiver": "T.Lockett",
+            "value": 13.7857
+          },
+          {
+            "season": 1999,
+            "team": "ATL",
+            "receiver": "T.Dwight",
+            "value": 13.38
+          },
+          {
+            "season": 2011,
+            "team": "GB",
+            "receiver": "J.Nelson",
+            "value": 12.8478
+          }
+        ]
+      },
+      "yards_over_expected": {
+        "label": "Receiving yards over expected",
+        "value": 383.6335,
+        "rank_of_n": [
+          15,
+          2653
+        ],
+        "percentile": 99.45,
+        "reference_window": [
+          2006,
+          2025
+        ],
+        "top5": [
+          {
+            "season": 2006,
+            "team": "KC",
+            "receiver": "T.Gonzalez",
+            "value": 480.6631
+          },
+          {
+            "season": 2011,
+            "team": "GB",
+            "receiver": "J.Nelson",
+            "value": 467.3289
+          },
+          {
+            "season": 2010,
+            "team": "PIT",
+            "receiver": "M.Wallace",
+            "value": 440.1458
+          },
+          {
+            "season": 2021,
+            "team": "LA",
+            "receiver": "C.Kupp",
+            "value": 438.0802
+          },
+          {
+            "season": 2011,
+            "team": "NYG",
+            "receiver": "V.Cruz",
+            "value": 433.3135
+          }
+        ]
+      }
+    },
+    "volume_barrier_claim": {
+      "claim": "Every receiver above Smith-Njigba on the single-season receiving list played on an offense that attempted at least 566 passes; Seattle threw 481.",
+      "source": "Seahawks.com, 2026-01-21",
+      "computed": {
+        "sea_2025_team_pass_attempts": 481,
+        "n_receiver_seasons_above": 6,
+        "min_team_pass_attempts_above": 566,
+        "seasons_above": [
+          {
+            "season": 2012,
+            "team": "DET",
+            "receiver": "C.Johnson",
+            "receiving_yards": 1964,
+            "team_pass_attempts": 740
+          },
+          {
+            "season": 2021,
+            "team": "LA",
+            "receiver": "C.Kupp",
+            "receiving_yards": 1947,
+            "team_pass_attempts": 607
+          },
+          {
+            "season": 2015,
+            "team": "ATL",
+            "receiver": "J.Jones",
+            "receiving_yards": 1871,
+            "team_pass_attempts": 621
+          },
+          {
+            "season": 2015,
+            "team": "PIT",
+            "receiver": "A.Brown",
+            "receiving_yards": 1841,
+            "team_pass_attempts": 590
+          },
+          {
+            "season": 2022,
+            "team": "MIN",
+            "receiver": "J.Jefferson",
+            "receiving_yards": 1809,
+            "team_pass_attempts": 672
+          },
+          {
+            "season": 2023,
+            "team": "MIA",
+            "receiver": "T.Hill",
+            "receiving_yards": 1799,
+            "team_pass_attempts": 566
+          }
+        ]
+      },
+      "verdict": "supported"
+    }
+  },
+  "darnold": {
+    "career": [
+      {
+        "season": 2018,
+        "season_type": "REG",
+        "team": "NYJ",
+        "games": 13,
+        "dropbacks": 459,
+        "interceptions": 15,
+        "fumbles_lost": 2,
+        "turnovers": 17,
+        "turnover_rate_per_dropback": 0.03704
+      },
+      {
+        "season": 2019,
+        "season_type": "REG",
+        "team": "NYJ",
+        "games": 13,
+        "dropbacks": 484,
+        "interceptions": 13,
+        "fumbles_lost": 3,
+        "turnovers": 16,
+        "turnover_rate_per_dropback": 0.03306
+      },
+      {
+        "season": 2020,
+        "season_type": "REG",
+        "team": "NYJ",
+        "games": 12,
+        "dropbacks": 424,
+        "interceptions": 11,
+        "fumbles_lost": 2,
+        "turnovers": 13,
+        "turnover_rate_per_dropback": 0.03066
+      },
+      {
+        "season": 2021,
+        "season_type": "REG",
+        "team": "CAR",
+        "games": 12,
+        "dropbacks": 465,
+        "interceptions": 13,
+        "fumbles_lost": 4,
+        "turnovers": 17,
+        "turnover_rate_per_dropback": 0.03656
+      },
+      {
+        "season": 2022,
+        "season_type": "REG",
+        "team": "CAR",
+        "games": 6,
+        "dropbacks": 156,
+        "interceptions": 3,
+        "fumbles_lost": 2,
+        "turnovers": 5,
+        "turnover_rate_per_dropback": 0.03205
+      },
+      {
+        "season": 2023,
+        "season_type": "REG",
+        "team": "SF",
+        "games": 10,
+        "dropbacks": 54,
+        "interceptions": 1,
+        "fumbles_lost": 1,
+        "turnovers": 2,
+        "turnover_rate_per_dropback": 0.03704
+      },
+      {
+        "season": 2024,
+        "season_type": "REG",
+        "team": "MIN",
+        "games": 17,
+        "dropbacks": 621,
+        "interceptions": 12,
+        "fumbles_lost": 4,
+        "turnovers": 16,
+        "turnover_rate_per_dropback": 0.02576
+      },
+      {
+        "season": 2024,
+        "season_type": "POST",
+        "team": "MIN",
+        "games": 1,
+        "dropbacks": 51,
+        "interceptions": 1,
+        "fumbles_lost": 1,
+        "turnovers": 2,
+        "turnover_rate_per_dropback": 0.03922
+      },
+      {
+        "season": 2025,
+        "season_type": "REG",
+        "team": "SEA",
+        "games": 17,
+        "dropbacks": 516,
+        "interceptions": 14,
+        "fumbles_lost": 6,
+        "turnovers": 20,
+        "turnover_rate_per_dropback": 0.03876
+      },
+      {
+        "season": 2025,
+        "season_type": "POST",
+        "team": "SEA",
+        "games": 3,
+        "dropbacks": 99,
+        "interceptions": 0,
+        "fumbles_lost": 0,
+        "turnovers": 0,
+        "turnover_rate_per_dropback": 0.0
+      }
+    ],
+    "clean_postseason": {
+      "regular_season_rate_per_dropback": 0.03876,
+      "playoff_dropbacks": 99,
+      "expected_turnovers": 3.837,
+      "p_zero_poisson": 0.02155,
+      "p_zero_binomial": 0.01997,
+      "odds_against_1_in": 46.4,
+      "caveat": "The playoff opponent set is not a random draw from the regular season and Seattle led for most of all three games, so this is an upper bound on how surprising the run was, not a point estimate."
+    },
+    "career_arc": {
+      "worst_rate_season": 2025,
+      "worst_rate_team": "SEA",
+      "worst_rate_per_dropback": 0.03876,
+      "focus_season_is_career_worst": true,
+      "note": "2025 is the worst turnover rate of his career by this measure -- worse than his rookie year -- which is the opposite of a player who gradually cleaned it up. The clean postseason is a break from his own form, not the end of a trend."
+    }
+  }
+}

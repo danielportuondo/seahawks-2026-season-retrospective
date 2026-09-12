@@ -151,6 +151,8 @@ historical = load_json("historical_percentiles.json")
 control = load_json("game_control.json")
 defense_deep = load_json("defense_deep_dive.json")
 counterfactual = load_json("counterfactual.json")
+players = load_json("players_deep_dive.json")
+scheme = load_json("scheme_deep_dive.json")
 features = load_features()
 
 PLOT_BG = "#0F1E38"
@@ -163,6 +165,13 @@ INK = "#F5F6F7"
 
 # Matches the image cap: charts, tables and prose all share one left column.
 NARROW_TABLE = 880
+
+
+def ordinal(n: int) -> str:
+    """1 -> 1st, 21 -> 21st, 11 -> 11th. The teens are the whole reason this exists."""
+    n = int(n)
+    suffix = "th" if 11 <= n % 100 <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+    return f"{n}{suffix}"
 
 
 def style_fig(fig, height: int | None = None):
@@ -204,7 +213,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-tab_story, tab_alltime, tab_method = st.tabs(["The Story", "All-Time Great?", "Methodology"])
+tab_story, tab_alltime, tab_players, tab_coach, tab_method = st.tabs(
+    ["The Story", "All-Time Great?", "Players", "Coach & Scheme", "Methodology"]
+)
 
 # ---------------------------------------------------------------------------
 # Story tab
@@ -665,6 +676,332 @@ the width. The same team, playing the same seventeen opponents, lands on 12–5 
 often as on 15–2. A season is a small sample, and three losses by nine total points is
 what the favourable side of that noise looks like — not a different, worse team.
 """
+    )
+
+# ---------------------------------------------------------------------------
+# Players tab (Phase 17)
+# ---------------------------------------------------------------------------
+with tab_players:
+    jsn = players["smith_njigba"]
+    jsn_rank = jsn["rankings"]
+    barrier = jsn["volume_barrier_claim"]
+    darnold = players["darnold"]
+    n_receiver_seasons = players["methodology"]["receiver_reference_set"]
+
+    st.caption(
+        f"Ranked against {n_receiver_seasons:,} receiver-seasons and every quarterback "
+        "season since 1999 — measured, not asserted."
+    )
+
+    p1, p2, p3, p4 = st.columns(4)
+    p1.metric(
+        "Receiving yards per team pass attempt",
+        f"{jsn_rank['yards_per_team_pass_attempt']['value']:.2f}",
+        f"1st of {n_receiver_seasons:,} since 1999",
+        delta_color="off",
+    )
+    p2.metric(
+        "Receiving yards",
+        f"{jsn['season']['receiving_yards']:,}",
+        f"Rank {jsn_rank['receiving_yards']['rank_of_n'][0]} of {n_receiver_seasons:,}",
+        delta_color="off",
+    )
+    p3.metric(
+        "Share of team receiving yards",
+        f"{100 * jsn_rank['team_receiving_yards_share']['value']:.1f}%",
+        f"Rank {jsn_rank['team_receiving_yards_share']['rank_of_n'][0]} of {n_receiver_seasons:,}",
+        delta_color="off",
+    )
+    p4.metric(
+        "Darnold's playoff turnovers",
+        "0",
+        f"In {darnold['clean_postseason']['playoff_dropbacks']} dropbacks",
+        delta_color="off",
+    )
+
+    st.divider()
+
+    st.header("Jaxon Smith-Njigba did more with less than anyone on record")
+    st.markdown(
+        f"""
+Smith-Njigba led the NFL in receiving yards, won Offensive Player of the Year and was a
+unanimous first-team All-Pro. He is only the second Seahawk ever to lead the league in
+receiving, after Steve Largent, and the second to win the award, after Shaun Alexander in
+2005. He broke the franchise single-season record by 490 yards.
+
+The number that separates him from everyone else is not the yardage. It is the yardage set
+against how rarely his offense threw. Measured as receiving yards per team pass attempt,
+his {jsn_rank["yards_per_team_pass_attempt"]["value"]:.2f} is **first among all
+{n_receiver_seasons:,} receiver-seasons since 1999** — ahead of Steve Smith's 2005, and
+ahead of every thousand-yard season by anyone else in the window.
+"""
+    )
+
+    st.image(str(OUTPUTS / "players_jsn_concentration.png"), width="stretch")
+
+    st.subheader("Where he ranks, measure by measure")
+    jsn_table = pd.DataFrame(
+        [
+            {
+                "Measure": v["label"],
+                "Value": round(v["value"], 3),
+                "Rank": f"{v['rank_of_n'][0]} of {v['rank_of_n'][1]:,}",
+                "Window": f"{v['reference_window'][0]}–{v['reference_window'][1]}",
+            }
+            for v in jsn_rank.values()
+        ]
+    )
+    st.dataframe(jsn_table, width=NARROW_TABLE, hide_index=True)
+    st.caption(
+        "Yards over expected uses air yards and expected yards after catch, which nflverse "
+        "does not publish before 2006 — hence the shorter window on that row only."
+    )
+
+    st.subheader("The 566 barrier")
+    st.markdown(
+        f"""
+The published version of this story is that every receiver with a bigger season had far
+more volume to work with. That is checkable rather than repeatable on faith, and it holds
+exactly: **{barrier["computed"]["n_receiver_seasons_above"]} receiver-seasons since 1999
+gained more than {jsn["season"]["receiving_yards"]:,} yards, and the fewest team pass
+attempts any of them had was
+{barrier["computed"]["min_team_pass_attempts_above"]}.** Seattle threw
+{barrier["computed"]["sea_2025_team_pass_attempts"]} times.
+"""
+    )
+    st.image(str(OUTPUTS / "players_jsn_volume_barrier.png"), width="stretch")
+
+    st.markdown(
+        """
+One honest note on what this measure can and cannot see. The right denominator for a
+receiver's opportunity is routes run, and routes are not in the play-by-play — this data
+carries no participation information at all. Target share over pass attempts therefore
+conflates running a route with being on the field, and slightly flatters a receiver who
+never leaves it. It is the same measure the published figures use, and it is a proxy.
+"""
+    )
+
+    st.header("Sam Darnold's worst season, and then none at all")
+    st.markdown(
+        f"""
+Darnold led the NFL in turnovers in 2025 with {darnold["career"][-2]["turnovers"]}. Then he
+played three playoff games and committed none.
+
+The usual telling is that he settled down as the year went on. The career record says
+something better than that. **2025 was the worst turnover rate of his entire career** —
+{100 * darnold["career_arc"]["worst_rate_per_dropback"]:.2f} per 100 dropbacks, worse than
+his rookie year with the Jets, worse than any of the seasons that got him labelled a bust.
+He did not gradually clean it up and peak. He was at his most careless, and then he stopped
+entirely for a month.
+"""
+    )
+    st.image(str(OUTPUTS / "players_darnold_career.png"), width="stretch")
+
+    d1, d2, d3 = st.columns(3)
+    d1.metric(
+        "Playoff dropbacks without a turnover",
+        f"{darnold['clean_postseason']['playoff_dropbacks']}",
+    )
+    d2.metric(
+        "Expected turnovers at his own 2025 rate",
+        f"{darnold['clean_postseason']['expected_turnovers']:.1f}",
+    )
+    d3.metric(
+        "P(zero turnovers)",
+        f"{darnold['clean_postseason']['p_zero_poisson']:.1%}",
+        f"~1 in {darnold['clean_postseason']['odds_against_1_in']:.0f}",
+        delta_color="off",
+    )
+    st.caption(darnold["clean_postseason"]["caveat"])
+
+    st.subheader("The career, season by season")
+    raw_career = pd.DataFrame(darnold["career"])
+    career_df = pd.DataFrame(
+        {
+            "Season": raw_career["season"].astype(str) + " " + raw_career["season_type"],
+            "Team": raw_career["team"],
+            "Games": raw_career["games"],
+            "Dropbacks": raw_career["dropbacks"],
+            "INT": raw_career["interceptions"],
+            "Fumbles lost": raw_career["fumbles_lost"],
+            "Turnovers": raw_career["turnovers"],
+            "Per 100 dropbacks": (100 * raw_career["turnover_rate_per_dropback"]).round(2),
+        }
+    )
+    st.dataframe(career_df, width=NARROW_TABLE, hide_index=True)
+
+    st.markdown(
+        """
+Two things this project cannot compute and reports as outside context: that his Super Bowl
+run came while playing through an oblique strain, and that the quarterback drafted third
+overall in 2018 was, on the night the phrase followed him for six years, 11 of 32 for 86
+yards with four interceptions against New England. The team he beat in Super Bowl LX was
+also New England.
+"""
+    )
+
+    st.header("Why there is no probability on the receiving season")
+    st.markdown(
+        """
+Phase 6 put a probability on Darnold's clean postseason, and it belongs there: turnovers
+are rare, discrete, near-independent events, which is exactly what a count model needs.
+The same treatment was considered for Smith-Njigba — how unlikely is 1,793 yards on 481
+pass attempts — and deliberately not built, for three reasons.
+
+The first is that pass volume is not independent of the receiver. Seattle ran the ball
+partly because it was ahead, and it was ahead partly because he was producing. Conditioning
+on the run-heaviness while asking about his yardage treats one half of a feedback loop as
+if it were fixed from outside.
+
+The second is that there is no honest null to draw from. Receiving yards are heavy-tailed,
+correlated within games and correlated with game script. A resample of his targets would
+assume independent, interchangeable trials, and that assumption fails hardest in the tail —
+precisely where the answer would live.
+
+The third is that the surprise is definitional. Yards per team pass attempt is target share
+multiplied by yards per target. He is first all-time on the product and sixth on the share,
+but only 53rd on yards per target. The rarity is concentration of opportunity, which is a
+coaching decision, not a coin that came up heads.
+
+So the page ranks instead of simulating. "First of 3,504, on a stated reference set" is a
+claim that cannot be wrong in the way a manufactured probability can be.
+"""
+    )
+
+# ---------------------------------------------------------------------------
+# Coach & Scheme tab (Phase 18)
+# ---------------------------------------------------------------------------
+with tab_coach:
+    dist = scheme["pass_rush_distribution"]
+    roster = scheme["sea_2025_pass_rush"]
+    wall = scheme["rushing_wall"]
+    yoy = scheme["year_over_year"]
+    n_team_seasons = scheme["methodology"]["team_seasons"]
+
+    st.caption(
+        "What the play-by-play can actually show about a defense — and an explicit list "
+        "of what it cannot."
+    )
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric(
+        "Points allowed per game",
+        f"{yoy['points_against_per_game']['2025']['value']:.1f}",
+        f"1st in 2025; {yoy['points_against_per_game']['2025']['rank_all_time'][0]} "
+        f"of {n_team_seasons} since 1999",
+        delta_color="off",
+    )
+    c2.metric(
+        "Opponent yards per carry",
+        f"{yoy['def_yards_per_carry_allowed']['2025']['value']:.2f}",
+        f"1st in 2025, up from "
+        f"{ordinal(yoy['def_yards_per_carry_allowed']['2024']['rank_in_season'])} in 2024",
+        delta_color="off",
+    )
+    c3.metric(
+        "Players with a sack",
+        f"{dist['distinct_sackers']['value']:.0f}",
+        f"Rank {dist['distinct_sackers']['rank_of_n'][0]} of {n_team_seasons} since 1999",
+        delta_color="off",
+    )
+    c4.metric(
+        "Share held by the top sacker",
+        f"{100 * dist['top_sacker_share']['value']:.1f}%",
+        f"League average {100 * dist['top_sacker_share']['league_mean_2025']:.1f}%",
+        delta_color="off",
+    )
+
+    st.divider()
+
+    st.header("The best defense in football had no star pass rusher")
+    st.markdown(
+        f"""
+Seattle allowed the fewest points in the NFL in 2025, the franchise's first scoring title
+since the Legion of Boom era. It did it without a single player reaching eight sacks.
+
+{len(roster)} different Seahawks recorded a sack. The leading total was
+{dist["best_individual"]["value"]:.0f}, shared three ways, and that total ranks
+**{dist["best_individual"]["rank_of_n"][0]:,} of
+{dist["best_individual"]["rank_of_n"][1]:,}** individual seasons since 1999 — which is the
+point rather than a criticism. The team's leading sacker accounted for just
+**{100 * dist["top_sacker_share"]["value"]:.1f}%** of its sacks, against a league average of
+{100 * dist["top_sacker_share"]["league_mean_2025"]:.1f}%. That is the
+{ordinal(dist["top_sacker_share"]["rank_of_n"][0])} most evenly distributed pass rush of
+{n_team_seasons} team-seasons since 1999.
+"""
+    )
+
+    st.image(str(OUTPUTS / "scheme_sack_concentration.png"), width="stretch")
+    st.image(str(OUTPUTS / "scheme_sack_roster.png"), width="stretch")
+
+    st.markdown(
+        f"""
+The run defense was the other half of it. Seattle allowed
+{yoy["def_yards_per_carry_allowed"]["2025"]["value"]:.2f} yards per carry, the best in the
+league, and went **{wall["games_without_allowing_a_100_yard_rusher"]} consecutive games
+without allowing an individual 100-yard rusher** — counted through the Super Bowl, which is
+why it runs longer than the in-season figure of 26 that was quoted at the time.
+"""
+    )
+
+    st.header("Year one was the same defense, unfinished")
+    st.markdown(
+        """
+Mike Macdonald had the same job and most of the same players in 2024, when Seattle went
+10–7 and missed the playoffs. The unit did not change hands. It changed rank.
+"""
+    )
+    yoy_df = pd.DataFrame(
+        [
+            {
+                "Measure": v["label"],
+                "2024": round(v["2024"]["value"], 3),
+                "Rank in 2024": v["2024"]["rank_in_season"],
+                "2025": round(v["2025"]["value"], 3),
+                "Rank in 2025": v["2025"]["rank_in_season"],
+                "All-time rank (2025)": f"{v['2025']['rank_all_time'][0]} of "
+                f"{v['2025']['rank_all_time'][1]}",
+            }
+            for v in yoy.values()
+        ]
+    )
+    st.dataframe(yoy_df, width="stretch", hide_index=True)
+    st.caption(
+        "Rank in season is among the 32 teams that year; all-time rank is among all "
+        f"{n_team_seasons} team-seasons since 1999."
+    )
+
+    st.header("What this data cannot tell you about Mike Macdonald")
+    st.markdown(
+        """
+Macdonald is the reason most of this happened, and he is also the part of the story this
+project is least able to measure. He is the first head coach in NFL history to win a Super
+Bowl while calling his own defensive plays — only two head coaches in the league even did
+it in 2025. He was the youngest head coach in the NFL when Seattle hired him at 36, and at
+38 he is the third-youngest ever to win the title. His 2023 Baltimore defense was the first
+in NFL history to lead the league in scoring defense, sacks and takeaways in the same
+season. He finished third in Coach of the Year voting behind Mike Vrabel, and then beat
+Vrabel's Patriots in Super Bowl LX.
+
+Every one of those is cited from published reporting, not computed here.
+
+The scheme he is famous for is worse than uncomputable — it is invisible. Disguise,
+simulated pressures, coverage rotation and his much-discussed sub-20% blitz rate all depend
+on knowing who was on the field and who rushed, and the play-by-play carries no
+participation data whatsoever. There is no honest proxy for deception either. Game-to-game
+variance is sometimes offered as one, but it mostly measures schedule strength and the fact
+that a season is only seventeen games long, so presenting it as evidence of disguise would
+be the least defensible thing available in this dataset.
+
+What is left is the shape of the pass rush, which is the observable counterpart of what
+people mean when they say pressure came from everywhere. That is the chart above, and it is
+a description of what happened rather than an explanation of why.
+"""
+    )
+
+    st.subheader("Explicitly not computable here")
+    st.markdown(
+        "\n".join(f"- {item}" for item in scheme["methodology"]["not_computable"])
     )
 
 # ---------------------------------------------------------------------------
