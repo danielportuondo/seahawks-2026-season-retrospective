@@ -88,8 +88,8 @@ import numpy as np
 import pandas as pd
 
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
-from scipy import optimize, special, stats  # noqa: E402
+import matplotlib.pyplot as plt
+from scipy import optimize, special, stats
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW_DIR = ROOT / "data" / "raw"
@@ -165,7 +165,7 @@ def validate_weekly(weekly: pd.DataFrame, truth: dict) -> None:
         "interceptions": int(weekly["interceptions"].sum()),
         "fumbles_lost": int(weekly["fumbles_lost"].sum()),
         "turnovers": int(weekly["turnovers"].sum()),
-        "games": int(len(weekly)),
+        "games": len(weekly),
     }
     for key, expected in GROUND_TRUTH.items():
         if got[key] != expected:
@@ -186,7 +186,7 @@ def dropback_reconciliation(pbp: pd.DataFrame) -> dict:
         ((off["rusher_player_id"] == QB_ID) & (off["qb_dropback"] == 1)).sum()
     )
     return {
-        "passer_rows": int(len(passer_rows)),
+        "passer_rows": len(passer_rows),
         "passer_rows_that_are_dropbacks": passer_dropbacks,
         "qb_spikes_excluded": spikes,
         "scrambles_added": scrambles,
@@ -273,12 +273,12 @@ def trend_test(weekly: pd.DataFrame) -> dict:
         "rate_multiplier_over_season": float(np.exp(slope * (len(weekly) - 1))),
         "likelihood_ratio_stat": float(lr),
         "p_value_trend": p_trend,
-        "first_half_games": int(len(first)),
+        "first_half_games": len(first),
         "first_half_turnovers": to1,
         "first_half_dropbacks": db1,
         "first_half_rate_per_dropback": to1 / db1,
         "first_half_turnovers_per_game": to1 / len(first),
-        "second_half_games": int(len(second)),
+        "second_half_games": len(second),
         "second_half_turnovers": to2,
         "second_half_dropbacks": db2,
         "second_half_rate_per_dropback": to2 / db2,
@@ -419,7 +419,7 @@ def plot_rolling(rolling: pd.DataFrame, rates: dict, trend: dict, path: Path) ->
     ax.axhline(rates["turnovers_per_game"], color="black", ls="--", lw=1.2,
                label=f"season mean = {rates['turnovers_per_game']:.2f}/game")
     ax.set_ylabel("Turnovers")
-    ax.set_yticks(range(0, int(rolling["turnovers"].max()) + 2))
+    ax.set_yticks(range(int(rolling["turnovers"].max()) + 2))
     ax.set_title(f"Sam Darnold 2025 regular season: {rates['turnovers']} turnovers "
                  f"({rates['interceptions']} INT + {rates['fumbles_lost']} lost fumbles), NFL high")
     ax.legend(loc="upper left", fontsize=9, ncol=3)
@@ -454,7 +454,7 @@ def plot_rolling(rolling: pd.DataFrame, rates: dict, trend: dict, path: Path) ->
             f"half-split p = {trend['p_value_half_split']:.2f}\n"
             f"Point estimate runs the other way ({trend['direction']}).",
             transform=ax.transAxes, ha="right", va="top", fontsize=9,
-            bbox=dict(boxstyle="round", fc="#fdf2e9", ec="#c0392b", alpha=0.95))
+            bbox={"boxstyle": "round", "fc": "#fdf2e9", "ec": "#c0392b", "alpha": 0.95})
 
     ax.set_xticks(x)
     ax.set_xticklabels(labels, fontsize=8)
@@ -496,10 +496,10 @@ def plot_probability(lam: float, alpha: float, result: dict, exposure: dict, pat
         f"(~1 in {result['odds_against_1_in']:.0f})\n"
         f"NB2 bound: {100 * result['p_zero_negative_binomial']:.2f}%",
         xy=(0.34, pmf[0] * 1.05), xytext=(1.15, ax.get_ylim()[1] * 0.44),
-        arrowprops=dict(arrowstyle="->", color="#c0392b", lw=1.8,
-                        connectionstyle="arc3,rad=0.25"),
+        arrowprops={"arrowstyle": "->", "color": "#c0392b", "lw": 1.8,
+                    "connectionstyle": "arc3,rad=0.25"},
         fontsize=11, color="#7b241c", fontweight="bold", va="center",
-        bbox=dict(boxstyle="round", fc="#fdedec", ec="#c0392b"),
+        bbox={"boxstyle": "round", "fc": "#fdedec", "ec": "#c0392b"},
     )
 
     ax.set_xticks(k)
@@ -623,7 +623,7 @@ def main() -> None:
                 "interceptions": int(weekly["interceptions"].sum()),
                 "fumbles_lost": int(weekly["fumbles_lost"].sum()),
                 "turnovers": int(weekly["turnovers"].sum()),
-                "games": int(len(weekly)),
+                "games": len(weekly),
             },
             "match": True,
         },
