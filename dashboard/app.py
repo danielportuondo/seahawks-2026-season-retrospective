@@ -686,6 +686,8 @@ with tab_players:
     jsn_rank = jsn["rankings"]
     barrier = jsn["volume_barrier_claim"]
     darnold = players["darnold"]
+    backfield = players["backfield"]
+    leap = players["year_two_leap"]
     n_receiver_seasons = players["methodology"]["receiver_reference_set"]
 
     st.caption(
@@ -753,8 +755,8 @@ ahead of every thousand-yard season by anyone else in the window.
     )
     st.dataframe(jsn_table, width=NARROW_TABLE, hide_index=True)
     st.caption(
-        "Yards over expected uses air yards and expected yards after catch, which nflverse "
-        "does not publish before 2006 — hence the shorter window on that row only."
+        "Yards over expected is built on air yards and expected yards after catch, which "
+        "nflverse publishes from 2006 — hence the shorter window on that row only."
     )
 
     st.subheader("The 566 barrier")
@@ -770,16 +772,6 @@ attempts any of them had was
 """
     )
     st.image(str(OUTPUTS / "players_jsn_volume_barrier.png"), width="stretch")
-
-    st.markdown(
-        """
-One honest note on what this measure can and cannot see. The right denominator for a
-receiver's opportunity is routes run, and routes are not in the play-by-play — this data
-carries no participation information at all. Target share over pass attempts therefore
-conflates running a route with being on the field, and slightly flatters a receiver who
-never leaves it. It is the same measure the published figures use, and it is a proxy.
-"""
-    )
 
     st.header("Sam Darnold's worst season, and then none at all")
     st.markdown(
@@ -832,40 +824,54 @@ entirely for a month.
 
     st.markdown(
         """
-Two things this project cannot compute and reports as outside context: that his Super Bowl
-run came while playing through an oblique strain, and that the quarterback drafted third
-overall in 2018 was, on the night the phrase followed him for six years, 11 of 32 for 86
-yards with four interceptions against New England. The team he beat in Super Bowl LX was
-also New England.
+He played the Super Bowl through an oblique strain. And on the night in 2019 that gave him
+a nickname he carried for six years, he went 11 of 32 for 86 yards with four interceptions.
+The opponent was New England. The team he beat in Super Bowl LX was also New England.
 """
     )
 
-    st.header("Why there is no probability on the receiving season")
+    st.header("Two backs, one backfield, and a touchdown gap")
     st.markdown(
-        """
-Phase 6 put a probability on Darnold's clean postseason, and it belongs there: turnovers
-are rare, discrete, near-independent events, which is exactly what a count model needs.
-The same treatment was considered for Smith-Njigba — how unlikely is 1,793 yards on 481
-pass attempts — and deliberately not built, for three reasons.
+        f"""
+Zach Charbonnet scored **{backfield["backs"][1]["rushing_tds"]} rushing touchdowns** —
+more than twice Kenneth Walker III's {backfield["backs"][0]["rushing_tds"]} — on
+{backfield["backs"][0]["carries"] - backfield["backs"][1]["carries"]} fewer carries and
+almost a yard less per attempt. That total ranks
+{backfield["touchdown_rank_of_n"][0]} of {backfield["touchdown_rank_of_n"][1]:,}
+rusher-seasons since 1999.
 
-The first is that pass volume is not independent of the receiver. Seattle ran the ball
-partly because it was ahead, and it was ahead partly because he was producing. Conditioning
-on the run-heaviness while asking about his yardage treats one half of a feedback loop as
-if it were fixed from outside.
-
-The second is that there is no honest null to draw from. Receiving yards are heavy-tailed,
-correlated within games and correlated with game script. A resample of his targets would
-assume independent, interchangeable trials, and that assumption fails hardest in the tail —
-precisely where the answer would live.
-
-The third is that the surprise is definitional. Yards per team pass attempt is target share
-multiplied by yards per target. He is first all-time on the product and sixth on the share,
-but only 53rd on yards per target. The rarity is concentration of opportunity, which is a
-coaching decision, not a coin that came up heads.
-
-So the page ranks instead of simulating. "First of 3,504, on a stated reference set" is a
-claim that cannot be wrong in the way a manufactured probability can be.
+The explanation is visible the moment goal-line carries are counted on their own.
+Charbonnet took **{backfield["backs"][1]["goal_line_carry_share"]:.0%} of Seattle's carries
+inside the five**, to Walker's {backfield["backs"][0]["goal_line_carry_share"]:.0%}, and
+turned {backfield["backs"][1]["tds_inside_5"]} of those
+{backfield["backs"][1]["carries_inside_5"]} into touchdowns. Walker got the yards and the
+Super Bowl MVP; Charbonnet got the ball on the two-yard line.
 """
+    )
+    st.image(str(OUTPUTS / "players_backfield_split.png"), width="stretch")
+
+    st.header("Byron Murphy's second year")
+    st.markdown(
+        f"""
+Murphy recorded **{leap["prior_sacks"]:g} sacks as a rookie in {leap["prior_season"]}**. In
+{leap["season"]} he recorded **{leap["sacks"]:g}**, tied for the team lead on the NFL's
+best scoring defense.
+
+A raw jump flatters anyone who simply played more, so it is worth a denominator: measured
+against every pair of consecutive seasons by the same player for the same team since 1999,
+a **+{leap["jump"]:g} sack increase ranks {leap["rank_of_n"][0]} of
+{leap["rank_of_n"][1]:,}** — inside the top {100 - leap["percentile"]:.1f}% of
+year-over-year jumps by any defender.
+"""
+    )
+    m1, m2, m3 = st.columns(3)
+    m1.metric(f"{leap['prior_season']} sacks", f"{leap['prior_sacks']:g}")
+    m2.metric(f"{leap['season']} sacks", f"{leap['sacks']:g}", f"+{leap['jump']:g}")
+    m3.metric(
+        "Rank among year-over-year jumps",
+        f"{leap['rank_of_n'][0]}",
+        f"of {leap['rank_of_n'][1]:,} since 1999",
+        delta_color="off",
     )
 
 # ---------------------------------------------------------------------------
@@ -876,11 +882,12 @@ with tab_coach:
     roster = scheme["sea_2025_pass_rush"]
     wall = scheme["rushing_wall"]
     yoy = scheme["year_over_year"]
+    disruption = scheme["ball_disruption"]
+    run_game = scheme["run_game"]
     n_team_seasons = scheme["methodology"]["team_seasons"]
 
     st.caption(
-        "What the play-by-play can actually show about a defense — and an explicit list "
-        "of what it cannot."
+        f"The 2025 defense against all {n_team_seasons} team-seasons since 1999."
     )
 
     c1, c2, c3, c4 = st.columns(4)
@@ -971,37 +978,82 @@ Mike Macdonald had the same job and most of the same players in 2024, when Seatt
         f"{n_team_seasons} team-seasons since 1999."
     )
 
-    st.header("What this data cannot tell you about Mike Macdonald")
+    st.header("Seventeen defenders got a hand on the ball")
     st.markdown(
-        """
-Macdonald is the reason most of this happened, and he is also the part of the story this
-project is least able to measure. He is the first head coach in NFL history to win a Super
-Bowl while calling his own defensive plays — only two head coaches in the league even did
-it in 2025. He was the youngest head coach in the NFL when Seattle hired him at 36, and at
-38 he is the third-youngest ever to win the title. His 2023 Baltimore defense was the first
-in NFL history to lead the league in scoring defense, sacks and takeaways in the same
-season. He finished third in Coach of the Year voting behind Mike Vrabel, and then beat
-Vrabel's Patriots in Super Bowl LX.
+        f"""
+The pass rush was not the only thing spread across the roster. Seattle broke up
+**{disruption["team_passes_defensed"]} passes** and intercepted
+**{disruption["team_interceptions"]}** more, and
+**{disruption["distinct_defenders_with_a_breakup"]} different players** recorded a
+breakup — the same shape as the sack chart, in coverage rather than on the rush.
 
-Every one of those is cited from published reporting, not computed here.
-
-The scheme he is famous for is worse than uncomputable — it is invisible. Disguise,
-simulated pressures, coverage rotation and his much-discussed sub-20% blitz rate all depend
-on knowing who was on the field and who rushed, and the play-by-play carries no
-participation data whatsoever. There is no honest proxy for deception either. Game-to-game
-variance is sometimes offered as one, but it mostly measures schedule strength and the fact
-that a season is only seventeen games long, so presenting it as evidence of disguise would
-be the least defensible thing available in this dataset.
-
-What is left is the shape of the pass rush, which is the observable counterpart of what
-people mean when they say pressure came from everywhere. That is the chart above, and it is
-a description of what happened rather than an explanation of why.
+The leader in interceptions was an off-ball linebacker. Ernest Jones IV took five of
+them, more than any defensive back on the roster, and returned one 85 yards for a
+touchdown.
 """
     )
+    disruption_df = pd.DataFrame(disruption["leaders"]).rename(
+        columns={
+            "player": "Player",
+            "passes_defensed": "Passes defensed",
+            "interceptions": "Interceptions",
+            "sacks": "Sacks",
+        }
+    )
+    st.dataframe(disruption_df, width=NARROW_TABLE, hide_index=True)
+    st.caption(
+        "A pass defensed is a defender physically breaking up a throw. It measures ball "
+        "disruption rather than how often a player was thrown at."
+    )
 
-    st.subheader("Explicitly not computable here")
+    st.header("The run game had a favourite direction")
     st.markdown(
-        "\n".join(f"- {item}" for item in scheme["methodology"]["not_computable"])
+        f"""
+Seattle ran the ball more than almost anyone, and it ran it best to the right:
+**{run_game["by_direction"]["right"]["yards_per_carry"]:.2f} yards per carry**, fifth in the
+NFL, against {run_game["by_direction"]["left"]["yards_per_carry"]:.2f} to the left on more
+than a third more carries.
+
+On the other side of it, the run defense was the best in football by some distance.
+Opponents managed {run_game["metrics"]["def_rush_epa_allowed"]["value"]:.3f} expected points
+per rush against Seattle — **1st in the league**, and
+{run_game["metrics"]["def_rush_epa_allowed"]["rank_of_n"][0]} of
+{run_game["metrics"]["def_rush_epa_allowed"]["rank_of_n"][1]} since 1999.
+"""
+    )
+    direction_df = pd.DataFrame(
+        [
+            {
+                "Running": loc.capitalize(),
+                "Share of Seattle's carries": f"{v['share_of_carries']:.1%}",
+                "Yards per carry": v["yards_per_carry"],
+                "Rank in 2025": v["rank_in_2025"],
+            }
+            for loc, v in run_game["by_direction"].items()
+        ]
+    )
+    st.dataframe(direction_df, width=NARROW_TABLE, hide_index=True)
+
+    st.header("Mike Macdonald")
+    st.markdown(
+        """
+Macdonald is the first head coach in NFL history to win a Super Bowl while calling his own
+defensive plays. Only two head coaches in the league even did it in 2025. He was the
+youngest head coach in the NFL when Seattle hired him at 36, and at 38 he is the
+third-youngest ever to win the title.
+
+He arrived with a track record. His 2023 Baltimore defense was the first in NFL history to
+lead the league in scoring defense, sacks and takeaways in the same season — a combination
+no team had managed in the previous hundred-odd years of the sport.
+
+He finished third in Coach of the Year voting behind Mike Vrabel. Five weeks later he beat
+Vrabel's Patriots 29–13 in Super Bowl LX, holding them to 78 yards and five first downs
+through three quarters.
+"""
+    )
+    st.caption(
+        "Records, awards and voting are cited from published reporting; everything else on "
+        "this page is computed from the play-by-play. Sources are in REFERENCES.md."
     )
 
 # ---------------------------------------------------------------------------
@@ -1374,6 +1426,82 @@ Holding recovery share at the league rate
 Seattle's turnover margin from **{tl["actual_turnover_margin"]:+d}** to
 **{tl["turnover_margin_at_league_recovery_rate"]:+.1f}** — a bounce component of
 **{tl["bounce_component"]:+.1f}**.
+"""
+    )
+
+    st.header("Player deep dives (Phase 17)")
+    st.markdown(
+        f"""
+`season_metrics.py` emits one row per player-season for 1999–2025. The receiver
+reference set is every regular season with 50+ targets —
+**{players["methodology"]["receiver_reference_set"]:,}** of them.
+
+**The denominator decides a target-share number.** nflverse's `pass_attempt` flag also
+fires on sacks and two-point conversion passes; left alone it gives SEA 2025 510 attempts
+against the league's official 481. Removing both lands on exactly 481, which puts
+Smith-Njigba's target share on 33.9% and his share of team receiving yards on 44.1% —
+reproducing the published figures rather than inventing a third set. Three different
+denominators are already circulating in public coverage of this season.
+
+**A silent trap, guarded.** nflverse ships two receiver keys. `receiver_player_id` is null
+on *incomplete* passes for 2003–2008 — 0.7% populated there against 80%+ for `receiver_id` —
+so aggregating targets on it counts only catches for six seasons. This project uses
+`receiver_id`, asserts the coverage at build time, and has a test that fails if the
+window's catch rate ever drifts.
+
+**Opportunity is a proxy.** Target share is measured over team pass attempts. The stricter
+denominator would be routes run, which no public play-by-play carries, so this measure
+slightly favours a receiver who never leaves the field. It is the same measure the
+published figures use.
+
+**Darnold's turnovers are counted over every snap he touched**, not only dropbacks. Phase 6
+established that one of his 20 giveaways in 2025 was an aborted snap coded as a run;
+restricting the numerator to dropbacks returns 19 and disagrees with every published total.
+The rate keeps dropbacks as its denominator, which makes it slightly conservative.
+
+**Rankings rather than probabilities, for the receiving season.** Phase 6's Poisson works
+because turnovers are rare, discrete, near-independent events. Receiving yards are none of
+those, and pass volume is jointly determined with the production it would be conditioning
+on — Seattle ran because it led, and led partly because Smith-Njigba produced. The surprise
+is also definitional: yards per team pass attempt is target share times yards per target,
+and he is 1st on the product, 6th on the share, 53rd on yards per target. Positions in a
+stated reference set are reported instead.
+"""
+    )
+
+    st.header("Coach and scheme (Phase 18)")
+    st.markdown(
+        f"""
+Sacks are counted with **half-credits**, because `sack_player_id` alone misses roughly a
+tenth of sacks — the shared ones — and a rotational pass rush is exactly what that
+undercounts. With halves included Seattle's 2025 total reconciles to the published 47.0
+exactly.
+
+Concentration is described two ways. Top-sacker share sees only the leader; the Herfindahl
+index sees the whole distribution, so a team with two co-leaders and a team with one leader
+plus a long tail can share a top-sacker share and separate here. Both rank against all
+{scheme["methodology"]["team_seasons"]} team-seasons.
+
+**Passes defensed measure ball disruption**, not coverage volume. They fire on a stable
+~30% of incompletions in every season since 1999, which makes them comparable across eras,
+but they record a defender getting a hand to the throw rather than how often he was
+targeted.
+
+**Run direction** uses `run_location`, populated on ~96% of carries in every season since
+1999. It describes where a run game worked. It cannot separate the blocking from the back,
+because the play-by-play names no blockers.
+
+**Pressure is ranked from 2006, not 1999**, and it is the only metric in this project on a
+short window. nflverse's QB-hit attribution is not stable: 2003–2005 contain zero QB hits
+and 1999–2002 about half the modern rate, so the `sack OR qb_hit` proxy degrades into a
+bare sack rate in those years. Ranking 2025 against all 861 team-seasons compared it
+against seasons where half the metric did not exist.
+
+**Cited, not computed.** Records, awards and voting margins throughout Phases 17–18 come
+from published reporting and are listed under `external_context_not_computed` in each
+phase's output JSON — the same treatment DVOA and blitz rate get. That covers the OPOY
+vote, All-Pro selections, Macdonald's play-calling and coaching records, Baltimore's 2023
+league lead, and games started, which no play-by-play records.
 """
     )
 

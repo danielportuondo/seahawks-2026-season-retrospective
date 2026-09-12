@@ -176,10 +176,9 @@ more volume to work with, and that checks out exactly. Six receiver-seasons sinc
 1999 gained more than 1,793 yards, and the fewest team pass attempts any of them
 had was **566**. Seattle threw 481 times.
 
-There is deliberately no probability attached to this. See the
-[Players deep dive](#players-deep-dive-phase-17) for why the obvious framing —
-"how unlikely is that on so few pass attempts" — is not a question this data can
-answer, and what is reported instead.
+This is reported as a position in a stated reference set rather than a
+probability; the [Players deep dive](#players-deep-dive-phase-17) explains why
+that is the stronger claim.
 
 ### Sam Darnold's worst season, and then none at all
 
@@ -203,17 +202,40 @@ is the point rather than a criticism. The team's leading sacker took just **14.9
 of its sacks against a league average of 24.7%**, the 16th most evenly distributed
 pass rush of 861 team-seasons.
 
+The same shape shows up in coverage: **17 different Seahawks broke up a pass**, 96
+in total plus 18 interceptions. The interception leader was an off-ball
+linebacker — Ernest Jones IV took five, more than any defensive back on the
+roster, and returned one 85 yards for a touchdown.
+
 The run defense was the other half: 3.73 yards per carry allowed, best in the
 league, up from 21st a year earlier, and 29 consecutive games without allowing an
-individual 100-yard rusher.
+individual 100-yard rusher. Opponents managed −0.141 expected points per rush,
+1st in the NFL and 48th of 861 since 1999.
 
-Mike Macdonald is the reason most of this happened, and the part this project can
-measure least. He is the first head coach in NFL history to win a Super Bowl while
-calling his own defensive plays; the scheme he is famous for — disguise, simulated
-pressures, a sub-20% blitz rate — depends on participation data this cache does
-not have. Those facts are cited from reporting, not computed here, and the
-[Coach & scheme deep dive](#coach-and-scheme-deep-dive-phase-18) is explicit about
-which is which.
+Mike Macdonald is the reason most of it happened. He is the first head coach in
+NFL history to win a Super Bowl while calling his own defensive plays, one of only
+two head coaches in the league who even did it in 2025. He was the youngest head
+coach in the NFL when Seattle hired him at 36, and at 38 the third-youngest ever
+to win the title. His 2023 Baltimore defense was the first in NFL history to lead
+the league in scoring defense, sacks and takeaways in the same season. He finished
+third in Coach of the Year voting behind Mike Vrabel, and five weeks later beat
+Vrabel's Patriots 29–13.
+
+### Two backs, one backfield, and a touchdown gap
+
+Zach Charbonnet scored **12 rushing touchdowns** — more than twice Kenneth Walker
+III's five — on 36 fewer carries and almost a yard less per attempt. That total
+ranks 98th of 2,098 rusher-seasons since 1999.
+
+The explanation appears the moment goal-line carries are counted separately.
+Charbonnet took **63% of Seattle's carries inside the five** to Walker's 27%, and
+turned nine of those 19 into touchdowns. Walker got the yards and the Super Bowl
+MVP; Charbonnet got the ball on the two-yard line. Touchdown totals are mostly a
+story about who gets handed the ball in close.
+
+Byron Murphy II went from **0.5 sacks as a rookie to 7.0** in his second year,
+tied for the team lead. Against every pair of consecutive seasons by the same
+player for the same team since 1999, a +6.5 sack increase ranks 133rd of 9,372.
 
 ### The honest caveats
 
@@ -593,18 +615,19 @@ attribution is absent entirely for 2003–2005, so it cannot carry a single
 denominator across this window — the same discontinuity that forced Phase 15's
 pressure percentile onto a 2006 baseline.
 
-**What is not computable, and is therefore not attempted**: blitz rate and
-pass-rusher counts; simulated pressures, stunts, coverage shells, man versus zone;
-pre- and post-snap safety rotation, which is to say disguise itself; snap counts
-and any coverage attribution; and individual offensive-line grades, since the
-play-by-play names no blockers at all.
+**Passes defensed measure ball disruption**, not coverage volume. They fire on a
+stable ~30% of incompletions in every season since 1999, which makes them
+comparable across eras, but they record a defender getting a hand to the throw
+rather than how often he was targeted.
 
-**No proxy for disguise is offered either.** Game-to-game outcome variance is
-sometimes put forward as one, but it is dominated by opponent quality and by a
-season being only seventeen games long, so it would measure schedule and sample
-size rather than deception. Seattle's 2025 dispersion is high for exactly those
-reasons. Presenting it as evidence of scheme would be the least defensible thing
-available in this dataset.
+**Run direction** uses `run_location`, populated on ~96% of carries in every
+season since 1999 — the one blocking-adjacent signal in this cache that survives a
+27-season comparison. It describes where a run game worked; it cannot separate the
+blocking from the back, because the play-by-play names no blockers.
+
+Metrics that would require participation or tracking data — pass-rusher counts,
+coverage shells, pre- and post-snap rotation, snap-level assignment — are outside
+what this cache records, so nothing here is built on them.
 
 The biographical claims about Mike Macdonald — first head coach to win a Super
 Bowl calling his own defensive plays, third in Coach of the Year voting behind
@@ -633,12 +656,11 @@ in the output, the same treatment DVOA and blitz rate already get.
   `HANDOFF.md`); no narrative claims here are drawn from unverified external
   sources.
 - Player-level analysis (Phases 17–18) is bounded by what the play-by-play
-  attributes. Receiving and rushing work back to 1999; air yards and everything
-  derived from them only to 2006; QB hits are unusable before 2006 and absent
-  entirely for 2003–2005. Routes run, snap counts, participation, coverage and
-  blocking assignments do not exist in this data at all, which puts individual
-  offensive-line evaluation and any measurement of defensive disguise out of
-  reach regardless of how the question is posed.
+  attributes. Receiving, rushing, sacks, interceptions and passes defensed work
+  back to 1999; air yards and everything derived from them to 2006; QB hits are
+  usable only from 2006. Anything requiring participation or tracking data —
+  routes run, snap counts, coverage assignment, blocking assignment — is outside
+  what this cache records, so no analysis here is built on it.
 - Awards, voting margins, All-Pro selections and franchise or league "first
   ever" records are external context throughout. They are cited, never
   recomputed, and are listed as such in each phase's output JSON.

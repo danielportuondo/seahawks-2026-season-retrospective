@@ -87,6 +87,12 @@ MIN_TARGETS = 50
 
 JSN_NAME = "J.Smith-Njigba"
 DARNOLD_NAME = "S.Darnold"
+MURPHY_NAME = "B.Murphy"
+PRIOR_SEASON = 2024
+
+# Enough carries for a rate to mean anything without excluding a committed
+# change-of-pace back, which is precisely the role this phase is looking at.
+MIN_CARRIES = 50
 
 # Ground truth, asserted before anything downstream runs. Every figure here is
 # independently published; if the pipeline stops reproducing them, fail loudly.
@@ -252,6 +258,106 @@ def career_turnover_ranking(career: pd.DataFrame) -> dict:
 
 
 # --------------------------------------------------------------------------
+# Running backs and the year-two leap
+# --------------------------------------------------------------------------
+
+
+def backfield_split(rushers: pd.DataFrame) -> dict:
+    """Two backs, one backfield, and a touchdown split that looks inexplicable.
+
+    Charbonnet scored more than twice Walker's rushing touchdowns on fewer carries
+    and a lower average. The tempting read is that he was simply better near the
+    goal line. The honest one is visible the moment goal-line carries are counted
+    separately: he was given most of them. Opportunity, not finishing.
+    """
+    reg = rushers[(rushers["season_type"] == "REG") & (rushers["carries"] >= MIN_CARRIES)]
+    sea = reg[(reg["season"] == FOCUS_SEASON) & (reg["team"] == FOCUS_TEAM)]
+    sea = sea.nlargest(2, "carries")
+
+    backs = []
+    for r in sea.itertuples():
+        backs.append(
+            {
+                "player": str(r.player_name),
+                "carries": int(r.carries),
+                "rushing_yards": int(r.rushing_yards),
+                "yards_per_carry": round(float(r.yards_per_carry), 2),
+                "epa_per_rush": round(float(r.epa_per_rush), 4),
+                "rushing_tds": int(r.rushing_tds),
+                "carries_inside_5": int(r.carries_inside_5),
+                "tds_inside_5": int(r.tds_inside_5),
+                "goal_line_carry_share": round(float(r.goal_line_carry_share), 4),
+                "carry_share": round(float(r.carry_share), 4),
+            }
+        )
+
+    scorer = max(backs, key=lambda b: b["rushing_tds"])
+    td_values = reg["rushing_tds"].dropna()
+    return {
+        "backs": backs,
+        "touchdown_leader": scorer["player"],
+        "touchdown_rank_of_n": [
+            rank_in_good_direction(td_values, scorer["rushing_tds"], True),
+            int(td_values.size),
+        ],
+        "reading": (
+            "The touchdown gap is a goal-line usage gap. Charbonnet took "
+            f"{scorer['goal_line_carry_share']:.0%} of Seattle's carries inside the five "
+            "while carrying the ball less often everywhere else. Touchdown totals are "
+            "mostly a story about who gets handed the ball on the two-yard line."
+        ),
+    }
+
+
+def year_two_leap(defenders: pd.DataFrame) -> dict:
+    """Rank Byron Murphy's sack jump against every back-to-back defender season.
+
+    A raw sack delta flatters players who simply played more, so the comparison
+    set is every pair of consecutive seasons by the same player for the same team
+    since 1999 -- which is the widest honest denominator this cache supports.
+    """
+    reg = defenders[defenders["season_type"] == "REG"][
+        ["season", "team", "player_id", "player_name", "sacks"]
+    ].copy()
+    prior = reg.copy()
+    prior["season"] = prior["season"] + 1
+    pairs = reg.merge(
+        prior,
+        on=["season", "team", "player_id", "player_name"],
+        suffixes=("", "_prior"),
+        how="inner",
+    )
+    pairs["jump"] = pairs["sacks"] - pairs["sacks_prior"]
+
+    murphy = pairs[
+        (pairs["season"] == FOCUS_SEASON)
+        & (pairs["team"] == FOCUS_TEAM)
+        & (pairs["player_name"] == MURPHY_NAME)
+    ]
+    if murphy.empty:
+        raise SystemExit(f"{MURPHY_NAME} has no {PRIOR_SEASON}->{FOCUS_SEASON} pair")
+    row = murphy.iloc[0]
+
+    return {
+        "player": MURPHY_NAME,
+        "prior_season": PRIOR_SEASON,
+        "prior_sacks": float(row["sacks_prior"]),
+        "season": FOCUS_SEASON,
+        "sacks": float(row["sacks"]),
+        "jump": float(row["jump"]),
+        "rank_of_n": [
+            rank_in_good_direction(pairs["jump"], float(row["jump"]), True),
+            len(pairs),
+        ],
+        "percentile": round(percentile_rank(pairs["jump"], float(row["jump"])), 2),
+        "comparison_set": (
+            "Every pair of consecutive regular seasons by the same player for the same "
+            "team since 1999, counting half-sacks."
+        ),
+    }
+
+
+# --------------------------------------------------------------------------
 # Charts
 # --------------------------------------------------------------------------
 
@@ -358,9 +464,43 @@ def darnold_career_chart(career: pd.DataFrame, path: Path) -> None:
     plt.close(fig)
 
 
+def backfield_chart(split: dict, path: Path) -> None:
+    """Four paired bars: the touchdown gap next to the opportunity that caused it."""
+    apply_scoreboard_style()
+    backs = split["backs"]
+    names = [b["player"] for b in backs]
+    fig, axes = plt.subplots(1, 4, figsize=fig_size(4.0))
+
+    panels = [
+        ("carries", "Carries", "{:.0f}"),
+        ("yards_per_carry", "Yards per carry", "{:.2f}"),
+        ("rushing_tds", "Rushing touchdowns", "{:.0f}"),
+        ("carries_inside_5", "Carries inside the 5", "{:.0f}"),
+    ]
+    colors = [WOLF_GREY, ACTION_GREEN]
+    for ax, (key, title, fmt) in zip(axes, panels):
+        values = [b[key] for b in backs]
+        ax.bar(names, values, color=colors)
+        ax.set_title(title, fontsize=11)
+        ax.tick_params(axis="x", labelsize=8.5)
+        for i, v in enumerate(values):
+            ax.text(i, v * 0.5, fmt.format(v), ha="center", va="center",
+                    fontweight="bold", fontsize=10)
+
+    fig.suptitle(
+        "Seattle's two backs in 2025\n"
+        "the touchdown gap is a goal-line usage gap, not a finishing gap"
+    )
+    fig.tight_layout()
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
+
+
 def main() -> None:
     receivers = load("receiver_season.csv")
     passers = load("passer_season.csv")
+    rushers = load("rusher_season.csv")
+    defenders = load("defender_season.csv")
 
     reference = receiver_reference(receivers)
     jsn = focus_receiver(reference)
@@ -370,6 +510,8 @@ def main() -> None:
     career = darnold_career(passers)
     clean = clean_postseason_probability(career)
     arc = career_turnover_ranking(career)
+    split = backfield_split(rushers)
+    leap = year_two_leap(defenders)
 
     results = {
         "methodology": {
@@ -435,6 +577,8 @@ def main() -> None:
             "clean_postseason": clean,
             "career_arc": arc,
         },
+        "backfield": split,
+        "year_two_leap": leap,
     }
 
     with open(OUT_DIR / "players_deep_dive.json", "w") as f:
@@ -443,6 +587,7 @@ def main() -> None:
     concentration_chart(reference, jsn, OUT_DIR / "players_jsn_concentration.png")
     volume_barrier_chart(barrier, jsn, OUT_DIR / "players_jsn_volume_barrier.png")
     darnold_career_chart(career, OUT_DIR / "players_darnold_career.png")
+    backfield_chart(split, OUT_DIR / "players_backfield_split.png")
 
     print(f"Smith-Njigba 2025 vs {len(reference):,} receiver-seasons ({MIN_TARGETS}+ targets, 1999-2025):")
     for v in rankings.values():
@@ -465,11 +610,25 @@ def main() -> None:
     print(f"  P(zero turnovers in {clean['playoff_dropbacks']} playoff dropbacks) = "
           f"{clean['p_zero_poisson']:.2%} (~1 in {clean['odds_against_1_in']:.0f})")
 
+    print("\nSeattle's backfield:")
+    for b in split["backs"]:
+        print(f"  {b['player']:<14} {b['carries']:>4} car  {b['yards_per_carry']:.2f} ypc  "
+              f"{b['rushing_tds']:>2} TD  |  inside the 5: {b['carries_inside_5']:>2} carries "
+              f"({b['goal_line_carry_share']:.0%} of team), {b['tds_inside_5']} TD")
+    r, n = split["touchdown_rank_of_n"]
+    print(f"  {split['touchdown_leader']}'s {max(b['rushing_tds'] for b in split['backs'])} "
+          f"rushing TDs rank {r} of {n:,} rusher-seasons")
+
+    print(f"\nYear-two leap: {leap['player']} {leap['prior_sacks']:g} -> {leap['sacks']:g} sacks "
+          f"({leap['jump']:+g}), rank {leap['rank_of_n'][0]} of {leap['rank_of_n'][1]:,} "
+          f"consecutive-season pairs")
+
     for name in (
         "players_deep_dive.json",
         "players_jsn_concentration.png",
         "players_jsn_volume_barrier.png",
         "players_darnold_career.png",
+        "players_backfield_split.png",
     ):
         print(f"Wrote {OUT_DIR / name}")
 

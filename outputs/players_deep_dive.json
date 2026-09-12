@@ -482,5 +482,53 @@
       "focus_season_is_career_worst": true,
       "note": "2025 is the worst turnover rate of his career by this measure -- worse than his rookie year -- which is the opposite of a player who gradually cleaned it up. The clean postseason is a break from his own form, not the end of a trend."
     }
+  },
+  "backfield": {
+    "backs": [
+      {
+        "player": "K.Walker",
+        "carries": 221,
+        "rushing_yards": 1027,
+        "yards_per_carry": 4.65,
+        "epa_per_rush": -0.0647,
+        "rushing_tds": 5,
+        "carries_inside_5": 8,
+        "tds_inside_5": 3,
+        "goal_line_carry_share": 0.2667,
+        "carry_share": 0.435
+      },
+      {
+        "player": "Z.Charbonnet",
+        "carries": 185,
+        "rushing_yards": 730,
+        "yards_per_carry": 3.95,
+        "epa_per_rush": -0.0063,
+        "rushing_tds": 12,
+        "carries_inside_5": 19,
+        "tds_inside_5": 9,
+        "goal_line_carry_share": 0.6333,
+        "carry_share": 0.3642
+      }
+    ],
+    "touchdown_leader": "Z.Charbonnet",
+    "touchdown_rank_of_n": [
+      98,
+      2098
+    ],
+    "reading": "The touchdown gap is a goal-line usage gap. Charbonnet took 63% of Seattle's carries inside the five while carrying the ball less often everywhere else. Touchdown totals are mostly a story about who gets handed the ball on the two-yard line."
+  },
+  "year_two_leap": {
+    "player": "B.Murphy",
+    "prior_season": 2024,
+    "prior_sacks": 0.5,
+    "season": 2025,
+    "sacks": 7.0,
+    "jump": 6.5,
+    "rank_of_n": [
+      133,
+      9372
+    ],
+    "percentile": 98.43,
+    "comparison_set": "Every pair of consecutive regular seasons by the same player for the same team since 1999, counting half-sacks."
   }
 }

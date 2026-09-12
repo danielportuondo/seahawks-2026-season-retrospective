@@ -133,6 +133,13 @@ PBP_COLS = [
     "solo_tackle_1_player_id",
     "solo_tackle_1_player_name",
     "rusher_player_name",
+    "pass_defense_1_player_id",
+    "pass_defense_1_player_name",
+    "pass_defense_2_player_id",
+    "pass_defense_2_player_name",
+    "yardline_100",
+    "run_location",
+    "run_gap",
 ]
 
 RECEIVER_ID_NOTE = (
@@ -798,33 +805,133 @@ def defender_season_frame(pbp: pd.DataFrame) -> pd.DataFrame:
     ints = _event("interception_player_id", "interception_player_name", "interceptions")
     solo = _event("solo_tackle_1_player_id", "solo_tackle_1_player_name", "solo_tackles")
 
+    # Passes defensed measures ball disruption -- a defender physically getting a
+    # hand to the throw. It is NOT coverage volume: it fires on a stable ~30% of
+    # incompletions in every season from 1999, so it compares cleanly across eras,
+    # but it says nothing about how often a defender was targeted.
+    pds = []
+    for id_col, name_col in [
+        ("pass_defense_1_player_id", "pass_defense_1_player_name"),
+        ("pass_defense_2_player_id", "pass_defense_2_player_name"),
+    ]:
+        part = pbp[pbp[id_col].notna() & pbp["defteam"].notna()][keys + [id_col, name_col]]
+        pds.append(part.rename(columns={id_col: "player_id", name_col: "player_name"}))
+    passes_defensed = (
+        pd.concat(pds, ignore_index=True)
+        .groupby(keys + ["player_id", "player_name"])
+        .size()
+        .reset_index(name="passes_defensed")
+    )
+
     per = sacks.merge(ints, on=keys + ["player_id", "player_name"], how="outer")
     per = per.merge(solo, on=keys + ["player_id", "player_name"], how="outer")
+    per = per.merge(passes_defensed, on=keys + ["player_id", "player_name"], how="outer")
     per = per.rename(columns={"defteam": "team"})
-    for col in ("sacks", "interceptions", "solo_tackles"):
+    for col in ("sacks", "interceptions", "solo_tackles", "passes_defensed"):
         per[col] = per[col].fillna(0)
     # Everyone who ever made a tackle would triple the committed file for no
     # analytical gain; the pass-rush and takeaway story needs the contributors.
-    return per[(per["sacks"] > 0) | (per["interceptions"] > 0)]
+    return per[(per["sacks"] > 0) | (per["interceptions"] > 0) | (per["passes_defensed"] > 0)]
+
+
+def rushing_direction_frame(pbp: pd.DataFrame) -> pd.DataFrame:
+    """Team-season rushing split by direction, both run and defended.
+
+    `run_location` is populated on ~96% of carries in every season since 1999,
+    which makes it the one blocking-adjacent signal in this cache that survives a
+    27-season comparison. It describes where a team's run game worked, not who
+    blocked it -- the play-by-play names no blockers, so this cannot separate the
+    line from the back and is not a line grade.
+    """
+    run = pbp[(pbp["rush_attempt"] == 1) & pbp["run_location"].notna()].copy()
+    run["stuffed"] = (run["yards_gained"] <= 0).astype(int)
+    keys = ["season", "season_type"]
+
+    out = _two_sided(
+        run,
+        keys,
+        {
+            "off_rush_yards_per_carry": ("rushing_yards", "mean"),
+            "off_rush_epa": ("epa", "mean"),
+            "off_stuffed_rate": ("stuffed", "mean"),
+            "off_carries": ("rush_attempt", "size"),
+        },
+        {
+            "def_stuffed_rate_forced": ("stuffed", "mean"),
+            "def_rush_epa_allowed": ("epa", "mean"),
+        },
+    )
+
+    parts = [out]
+    for loc in ("left", "middle", "right"):
+        side = run[run["run_location"] == loc]
+        parts.append(
+            _two_sided(
+                side,
+                keys,
+                {
+                    f"off_rush_ypc_{loc}": ("rushing_yards", "mean"),
+                    f"off_rush_share_{loc}": ("rush_attempt", "size"),
+                },
+                {f"def_rush_ypc_allowed_{loc}": ("rushing_yards", "mean")},
+            )
+        )
+    frame = parts[0]
+    for part in parts[1:]:
+        frame = frame.merge(part, on=keys + ["team"], how="outer")
+
+    for loc in ("left", "middle", "right"):
+        frame[f"off_rush_share_{loc}"] = frame[f"off_rush_share_{loc}"] / frame["off_carries"]
+    return frame
 
 
 def rusher_season_frame(pbp: pd.DataFrame) -> pd.DataFrame:
-    """One row per rusher-season. Starts are NOT in the pbp -- see Phase 17."""
-    run = pbp[(pbp["rush_attempt"] == 1) & pbp["rusher_player_id"].notna()]
+    """One row per rusher-season, including where on the field the carries came.
+
+    Goal-line usage is carried explicitly because touchdown totals are mostly a
+    story about opportunity: a back who gets the ball inside the five will outscore
+    a better back who does not. Separating the two is the whole point of looking.
+
+    Games started are NOT in the play-by-play, so any claim about starts is
+    external context rather than something computed here.
+    """
+    run = pbp[(pbp["rush_attempt"] == 1) & pbp["rusher_player_id"].notna()].copy()
+    run["inside_10"] = (run["yardline_100"] <= 10).astype(int)
+    run["inside_5"] = (run["yardline_100"] <= 5).astype(int)
+    run["td_inside_5"] = ((run["yardline_100"] <= 5) & (run["rush_touchdown"] == 1)).astype(int)
+    run["stuffed"] = (run["yards_gained"] <= 0).astype(int)
+
+    keys = ["season", "season_type", "posteam", "rusher_player_id", "rusher_player_name"]
     per = (
-        run.groupby(["season", "season_type", "posteam", "rusher_player_id", "rusher_player_name"])
+        run.groupby(keys)
         .agg(
             carries=("rush_attempt", "size"),
             rushing_yards=("rushing_yards", "sum"),
             rushing_tds=("rush_touchdown", "sum"),
             epa_per_rush=("epa", "mean"),
             games=("game_id", "nunique"),
+            carries_inside_10=("inside_10", "sum"),
+            carries_inside_5=("inside_5", "sum"),
+            tds_inside_5=("td_inside_5", "sum"),
+            stuffed_runs=("stuffed", "sum"),
         )
         .reset_index()
         .rename(columns={"posteam": "team", "rusher_player_id": "player_id",
                          "rusher_player_name": "player_name"})
     )
+    team_totals = (
+        run.groupby(["season", "season_type", "posteam"])
+        .agg(team_carries=("rush_attempt", "size"),
+             team_carries_inside_5=("inside_5", "sum"))
+        .reset_index()
+        .rename(columns={"posteam": "team"})
+    )
+    per = per.merge(team_totals, on=["season", "season_type", "team"], how="left")
     per["yards_per_carry"] = per["rushing_yards"] / per["carries"]
+    per["tds_per_carry"] = per["rushing_tds"] / per["carries"]
+    per["carry_share"] = per["carries"] / per["team_carries"]
+    per["goal_line_carry_share"] = per["carries_inside_5"] / per["team_carries_inside_5"]
+    per["stuffed_rate"] = per["stuffed_runs"] / per["carries"]
     return per
 
 
@@ -842,7 +949,14 @@ def build_season(season: int) -> dict[str, pd.DataFrame]:
         focus_wp_curve(pbp).to_csv(PROCESSED_DIR / "focus_wp_curve.csv", index=False)
 
     frame = efficiency_metrics(pbp)
-    for build in (explosive_metrics, pressure_metrics, turnover_metrics, run_defense_metrics, drive_metrics):
+    for build in (
+        explosive_metrics,
+        pressure_metrics,
+        turnover_metrics,
+        run_defense_metrics,
+        drive_metrics,
+        rushing_direction_frame,
+    ):
         frame = frame.merge(build(pbp), on=["season", "season_type", "team"], how="outer")
     frame = frame.merge(control_metrics(gc), on=["season", "season_type", "team"], how="outer")
 

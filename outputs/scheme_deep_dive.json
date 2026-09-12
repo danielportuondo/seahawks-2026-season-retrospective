@@ -357,5 +357,138 @@
       "label": "Success rate allowed",
       "change": -0.046
     }
+  },
+  "ball_disruption": {
+    "team_passes_defensed": 96,
+    "team_interceptions": 18,
+    "team_rank_of_n": [
+      77,
+      861
+    ],
+    "distinct_defenders_with_a_breakup": 17,
+    "leaders": [
+      {
+        "player": "T.Woolen",
+        "passes_defensed": 12,
+        "interceptions": 1,
+        "sacks": 0.0
+      },
+      {
+        "player": "J.Jobe",
+        "passes_defensed": 12,
+        "interceptions": 1,
+        "sacks": 0.5
+      },
+      {
+        "player": "E.Jones",
+        "passes_defensed": 7,
+        "interceptions": 5,
+        "sacks": 0.5
+      },
+      {
+        "player": "N.Emmanwori",
+        "passes_defensed": 11,
+        "interceptions": 1,
+        "sacks": 2.5
+      },
+      {
+        "player": "C.Bryant",
+        "passes_defensed": 7,
+        "interceptions": 4,
+        "sacks": 0.0
+      },
+      {
+        "player": "D.Thomas",
+        "passes_defensed": 8,
+        "interceptions": 1,
+        "sacks": 3.5
+      },
+      {
+        "player": "D.Witherspoon",
+        "passes_defensed": 7,
+        "interceptions": 1,
+        "sacks": 0.5
+      },
+      {
+        "player": "J.Love",
+        "passes_defensed": 6,
+        "interceptions": 1,
+        "sacks": 1.0
+      }
+    ]
+  },
+  "run_game": {
+    "metrics": {
+      "off_rush_yards_per_carry": {
+        "label": "Yards per carry",
+        "value": 4.3588,
+        "rank_of_n": [
+          435,
+          861
+        ],
+        "percentile": 49.5,
+        "rank_in_2025": 23
+      },
+      "off_stuffed_rate": {
+        "label": "Runs stopped at or behind the line",
+        "value": 0.1959,
+        "rank_of_n": [
+          605,
+          861
+        ],
+        "percentile": 29.8,
+        "rank_in_2025": 28
+      },
+      "off_rush_epa": {
+        "label": "EPA per rush",
+        "value": -0.025,
+        "rank_of_n": [
+          393,
+          861
+        ],
+        "percentile": 54.4,
+        "rank_in_2025": 25
+      },
+      "def_stuffed_rate_forced": {
+        "label": "Opponent runs stopped at or behind the line",
+        "value": 0.1785,
+        "rank_of_n": [
+          446,
+          861
+        ],
+        "percentile": 48.3,
+        "rank_in_2025": 10
+      },
+      "def_rush_epa_allowed": {
+        "label": "Opponent EPA per rush",
+        "value": -0.1409,
+        "rank_of_n": [
+          48,
+          861
+        ],
+        "percentile": 94.5,
+        "rank_in_2025": 1
+      }
+    },
+    "by_direction": {
+      "left": {
+        "share_of_carries": 0.3979,
+        "yards_per_carry": 3.855,
+        "opponent_yards_per_carry_allowed": 3.489,
+        "rank_in_2025": 31
+      },
+      "middle": {
+        "share_of_carries": 0.2825,
+        "yards_per_carry": 3.796,
+        "opponent_yards_per_carry_allowed": 3.549,
+        "rank_in_2025": 23
+      },
+      "right": {
+        "share_of_carries": 0.3196,
+        "yards_per_carry": 5.484,
+        "opponent_yards_per_carry_allowed": 4.563,
+        "rank_in_2025": 5
+      }
+    }
   }
 }

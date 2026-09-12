@@ -241,6 +241,104 @@ def year_over_year(advanced: pd.DataFrame) -> dict:
     return out
 
 
+def ball_disruption(defenders: pd.DataFrame) -> dict:
+    """Who actually got a hand on the ball.
+
+    Passes defensed fire on a stable ~30% of incompletions in every season since
+    1999, which makes them comparable across eras. They measure ball disruption --
+    a defender physically breaking up a throw -- and NOT how often a defender was
+    targeted, which this data does not record.
+    """
+    sea = defenders[
+        (defenders["season"] == FOCUS_SEASON)
+        & (defenders["season_type"] == "REG")
+        & (defenders["team"] == FOCUS_TEAM)
+    ].copy()
+    sea["disruptions"] = sea["passes_defensed"] + sea["interceptions"]
+    top = sea.nlargest(8, "disruptions")
+
+    reg = defenders[defenders["season_type"] == "REG"]
+    team_totals = (
+        reg.groupby(["season", "team"])[["passes_defensed", "interceptions"]].sum().reset_index()
+    )
+    team_totals["disruptions"] = (
+        team_totals["passes_defensed"] + team_totals["interceptions"]
+    )
+    sea_total = team_totals[
+        (team_totals["season"] == FOCUS_SEASON) & (team_totals["team"] == FOCUS_TEAM)
+    ].iloc[0]
+
+    return {
+        "team_passes_defensed": int(sea_total["passes_defensed"]),
+        "team_interceptions": int(sea_total["interceptions"]),
+        "team_rank_of_n": [
+            rank_in_good_direction(
+                team_totals["disruptions"], float(sea_total["disruptions"]), True
+            ),
+            len(team_totals),
+        ],
+        "distinct_defenders_with_a_breakup": int((sea["passes_defensed"] > 0).sum()),
+        "leaders": [
+            {
+                "player": str(r.player_name),
+                "passes_defensed": int(r.passes_defensed),
+                "interceptions": int(r.interceptions),
+                "sacks": float(r.sacks),
+            }
+            for r in top.itertuples()
+        ],
+    }
+
+
+def run_game(advanced: pd.DataFrame) -> dict:
+    """Seattle's run game and run defense, split by direction.
+
+    `run_location` is populated on ~96% of carries in every season since 1999,
+    which makes it the one blocking-adjacent signal here that survives a 27-season
+    comparison. It describes where the run game worked, not who blocked it.
+    """
+    reg = advanced[advanced["season_type"] == "REG"]
+    sea = reg[(reg["season"] == FOCUS_SEASON) & (reg["team"] == FOCUS_TEAM)].iloc[0]
+
+    out = {}
+    for metric, label, higher_better in [
+        ("off_rush_yards_per_carry", "Yards per carry", True),
+        ("off_stuffed_rate", "Runs stopped at or behind the line", False),
+        ("off_rush_epa", "EPA per rush", True),
+        ("def_stuffed_rate_forced", "Opponent runs stopped at or behind the line", True),
+        ("def_rush_epa_allowed", "Opponent EPA per rush", False),
+    ]:
+        values = reg[metric].dropna()
+        value = float(sea[metric])
+        pct = percentile_rank(values, value)
+        out[metric] = {
+            "label": label,
+            "value": round(value, 4),
+            "rank_of_n": [rank_in_good_direction(values, value, higher_better), int(values.size)],
+            "percentile": round(pct if higher_better else 100 - pct, 1),
+            "rank_in_2025": rank_in_good_direction(
+                reg[reg["season"] == FOCUS_SEASON][metric], value, higher_better
+            ),
+        }
+
+    directions = {}
+    for loc in ("left", "middle", "right"):
+        directions[loc] = {
+            "share_of_carries": round(float(sea[f"off_rush_share_{loc}"]), 4),
+            "yards_per_carry": round(float(sea[f"off_rush_ypc_{loc}"]), 3),
+            "opponent_yards_per_carry_allowed": round(
+                float(sea[f"def_rush_ypc_allowed_{loc}"]), 3
+            ),
+            "rank_in_2025": rank_in_good_direction(
+                reg[reg["season"] == FOCUS_SEASON][f"off_rush_ypc_{loc}"],
+                float(sea[f"off_rush_ypc_{loc}"]),
+                True,
+            ),
+        }
+    out_directions = {"metrics": out, "by_direction": directions}
+    return out_directions
+
+
 # --------------------------------------------------------------------------
 # Charts
 # --------------------------------------------------------------------------
@@ -311,6 +409,8 @@ def main() -> None:
     takeaways = takeaway_leaders(defenders)
     wall = rushing_wall(game_eff)
     yoy = year_over_year(advanced)
+    disruption = ball_disruption(defenders)
+    running = run_game(advanced)
 
     results = {
         "methodology": {
@@ -357,6 +457,8 @@ def main() -> None:
         "sea_2025_takeaway_leaders": takeaways,
         "rushing_wall": wall,
         "year_over_year": yoy,
+        "ball_disruption": disruption,
+        "run_game": running,
     }
 
     with open(OUT_DIR / "scheme_deep_dive.json", "w") as f:
@@ -381,6 +483,19 @@ def main() -> None:
         print(f"  {v['label']:<34} {a['value']:>8.3f} (#{a['rank_in_season']}) -> "
               f"{b['value']:>8.3f} (#{b['rank_in_season']})  "
               f"[{b['rank_all_time'][0]} of {b['rank_all_time'][1]:,} all-time]")
+
+    print(f"\nBall disruption: {disruption['team_passes_defensed']} passes defensed + "
+          f"{disruption['team_interceptions']} interceptions, rank "
+          f"{disruption['team_rank_of_n'][0]} of {disruption['team_rank_of_n'][1]:,}; "
+          f"{disruption['distinct_defenders_with_a_breakup']} defenders broke up a pass")
+
+    print("\nRun game:")
+    for v in running["metrics"].values():
+        r, n = v["rank_of_n"]
+        print(f"  {v['label']:<44} {v['value']:>8.3f}  rank {r} of {n:,} (#{v['rank_in_2025']} in 2025)")
+    for loc, v in running["by_direction"].items():
+        print(f"  running {loc:<6} {v['share_of_carries']:.1%} of carries, "
+              f"{v['yards_per_carry']:.2f} ypc (#{v['rank_in_2025']} in 2025)")
 
     for name in ("scheme_deep_dive.json", "scheme_sack_concentration.png", "scheme_sack_roster.png"):
         print(f"Wrote {OUT_DIR / name}")
