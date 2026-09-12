@@ -14,7 +14,8 @@ import streamlit as st
 
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUTS = ROOT / "outputs"
-FEATURES_CSV = ROOT / "data" / "processed" / "team_week_features.csv"
+PROCESSED = ROOT / "data" / "processed"
+FEATURES_CSV = PROCESSED / "team_week_features.csv"
 
 sys.path.insert(0, str(ROOT / "src"))
 from phase7_decomposition import load_team_season_features
@@ -80,12 +81,45 @@ def load_features() -> pd.DataFrame:
     return pd.read_csv(FEATURES_CSV)
 
 
+@st.cache_data
+def load_processed(name: str) -> pd.DataFrame:
+    return pd.read_csv(PROCESSED / name)
+
+
 pyth = load_json("pythagorean_results.json")
 personnel = load_json("personnel_scheme_results.json")
 defense = load_json("defense_anomaly_results.json")
 turnover = load_json("turnover_rate_model_results.json")
 decomp = load_json("decomposition_results.json")
+historical = load_json("historical_percentiles.json")
+control = load_json("game_control.json")
+defense_deep = load_json("defense_deep_dive.json")
+counterfactual = load_json("counterfactual.json")
 features = load_features()
+
+PLOT_BG = "#0F1E38"
+GRID = "#1C2C48"
+GREEN = "#69BE28"
+GREY = "#A5ACAF"
+AMBER = "#F2C14E"
+RED = "#D6432D"
+INK = "#F5F6F7"
+
+
+def style_fig(fig, height: int | None = None):
+    """The scoreboard Plotly treatment, applied identically to every figure."""
+    fig.update_layout(
+        plot_bgcolor=PLOT_BG,
+        paper_bgcolor=PLOT_BG,
+        font_color=INK,
+        margin={"l": 10, "r": 10, "t": 40, "b": 10},
+        legend={"bgcolor": "rgba(0,0,0,0)"},
+    )
+    if height:
+        fig.update_layout(height=height)
+    fig.update_xaxes(gridcolor=GRID, zerolinecolor=GRID)
+    fig.update_yaxes(gridcolor=GRID, zerolinecolor=GRID)
+    return fig
 
 METRIC_OPTIONS = {
     "Offensive EPA/play (higher = better)": "off_epa_per_play",
@@ -111,7 +145,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-tab_story, tab_method = st.tabs(["The Story", "Methodology"])
+tab_story, tab_alltime, tab_method = st.tabs(["The Story", "All-Time Great?", "Methodology"])
 
 # ---------------------------------------------------------------------------
 # Story tab
@@ -248,6 +282,32 @@ shows — the team may have quietly left a little improvement on the table.
     fig.update_yaxes(gridcolor="#1C2C48")
     st.plotly_chart(fig, width="stretch")
 
+    st.header("Were they actually all-time great?")
+    st.markdown(
+        f"""
+Phases 2–7 answered *what changed*. They can't answer *how good was this, historically* —
+that needs a denominator. Measured against all 861 team-seasons since 1999:
+
+- **Yes, on how games went.** Explosive plays allowed ranked
+  {historical["metrics"]["def_explosive_rate_allowed"]["rank_of_n"][0]} of 861;
+  clock-weighted lead ranked
+  {historical["metrics"]["time_weighted_margin"]["rank_of_n"][0]}. Among Super Bowl
+  champions since 2000, no one held a bigger lead for longer.
+- **No, on taking the ball away.** Full-season turnover margin was
+  {historical["metrics"]["turnover_margin"]["sea_2025_value"]:+.0f} — about average — and
+  three-and-outs forced were ordinary too.
+- **14–3 was exactly what that quality predicts — and still mostly luck of the draw.**
+  Replaying the season {counterfactual["methodology"]["n_simulations"]:,} times makes 14
+  wins the single most likely outcome, but only at
+  {counterfactual["monte_carlo"]["win_distribution"]["14"]:.0f}%; the 90% range runs
+  {counterfactual["monte_carlo"]["p05_wins"]:.0f} to
+  {counterfactual["monte_carlo"]["p95_wins"]:.0f} wins.
+
+The full breakdown, with the published claims tested one by one, is on the
+**All-Time Great?** tab.
+"""
+    )
+
     st.header("The honest caveats")
     st.markdown(
         """
@@ -268,6 +328,281 @@ shows — the team may have quietly left a little improvement on the table.
     )
 
 # ---------------------------------------------------------------------------
+# All-Time Great? tab (Phases 13-16)
+# ---------------------------------------------------------------------------
+with tab_alltime:
+    st.caption(
+        "Every number on this tab is measured against all 861 team-seasons since 1999 — "
+        "the denominator the rest of this project doesn't have."
+    )
+
+    hm = historical["metrics"]
+    si = control["si_claim"]
+    streak = defense_deep["eight_week_streak_claim"]
+    mc = counterfactual["monte_carlo"]
+
+    k1, k2, k3, k4 = st.columns(4)
+    k1.metric(
+        "Clock-weighted lead",
+        f"+{hm['time_weighted_margin']['sea_2025_value']:.1f}",
+        f"{hm['time_weighted_margin']['rank_of_n'][0]} of "
+        f"{hm['time_weighted_margin']['rank_of_n'][1]} since 1999",
+        delta_color="off",
+    )
+    k2.metric(
+        "Explosive plays allowed",
+        f"{100 * hm['def_explosive_rate_allowed']['sea_2025_value']:.1f}%",
+        f"{hm['def_explosive_rate_allowed']['rank_of_n'][0]} of "
+        f"{hm['def_explosive_rate_allowed']['rank_of_n'][1]} since 1999",
+        delta_color="off",
+    )
+    k3.metric(
+        "Best 8-game defensive stretch",
+        f"{streak['garbage_time_filtered']['sea_2025_best_window']:.3f}",
+        f"{streak['garbage_time_filtered']['sea_2025_rank_of_n'][0]} of "
+        f"{streak['garbage_time_filtered']['sea_2025_rank_of_n'][1]} EPA/play",
+        delta_color="off",
+    )
+    k4.metric(
+        "Seasons that reach 14+ wins",
+        f"{mc['pct_of_seasons_at_least_14_wins']:.0f}%",
+        f"of {counterfactual['methodology']['n_simulations']:,} replays",
+        delta_color="off",
+    )
+
+    st.divider()
+
+    st.header("Were they actually all-time great?")
+    st.markdown(
+        f"""
+On the measures that describe **how games went**, yes, emphatically. Seattle gave up
+explosive plays at a rate bettered by only
+**{hm["def_explosive_rate_allowed"]["rank_of_n"][0] - 1} team-seasons since 1999**, and held
+a clock-weighted lead bettered by only
+**{hm["time_weighted_margin"]["rank_of_n"][0] - 1}**.
+
+On the measures that describe **taking the ball away**, no. The full-season turnover margin
+was **{hm["turnover_margin"]["sea_2025_value"]:+.0f}** — the
+{hm["turnover_margin"]["raw_percentile"]:.0f}th percentile, which is to say roughly average.
+The "they fixed the turnovers" story is a story about the end of the season, not the whole
+of it. Forcing three-and-outs was similarly ordinary
+({hm["three_and_out_rate_forced"]["raw_percentile"]:.0f}th percentile).
+
+This team won by never letting anything big happen, not by generating chaos.
+"""
+    )
+
+    st.subheader("Metric explorer")
+    st.caption(
+        "Pick a metric to see the full 1999–2025 distribution. Grey is every other "
+        "team-season; green is SEA 2025."
+    )
+
+    metric_labels = {v["label"]: k for k, v in hm.items()}
+    picked_label = st.selectbox("Metric", sorted(metric_labels), key="alltime_metric")
+    picked = metric_labels[picked_label]
+    meta = hm[picked]
+
+    advanced = load_processed("team_season_advanced.csv")
+    reg_all = advanced[advanced["season_type"] == "REG"]
+
+    hist = px.histogram(reg_all, x=picked, nbins=45, opacity=0.85)
+    hist.update_traces(marker_color=GREY, hovertemplate="%{x}<br>%{y} team-seasons<extra></extra>")
+    hist.add_vline(
+        x=meta["sea_2025_value"],
+        line_color=GREEN,
+        line_width=3,
+        annotation_text="SEA 2025",
+        annotation_font_color=GREEN,
+    )
+    hist.update_layout(
+        title=f"{picked_label} — SEA 2025 ranks {meta['rank_of_n'][0]} of {meta['rank_of_n'][1]}",
+        xaxis_title=picked_label,
+        yaxis_title="Team-seasons",
+        bargap=0.02,
+    )
+    st.plotly_chart(style_fig(hist, 400), width="stretch")
+
+    mc1, mc2, mc3 = st.columns(3)
+    mc1.metric("Raw percentile", f"{meta['raw_percentile']:.0f}")
+    mc2.metric("Era-adjusted percentile", f"{meta['era_adjusted_percentile']:.0f}")
+    mc3.metric(
+        "All-time best",
+        f"{meta['all_time_best']['value']:.3g}",
+        f"{meta['all_time_best']['season']} {meta['all_time_best']['team']}",
+        delta_color="off",
+    )
+    st.caption(
+        "Raw compares values directly; era-adjusted compares each season against its own "
+        "league. Where they disagree, the era-adjusted number is the honest one."
+    )
+
+    st.subheader("Game explorer")
+    st.caption(
+        "Win probability through each of Seattle's 20 games — the nflverse model, "
+        "not a betting line."
+    )
+
+    curve = load_processed("focus_wp_curve.csv")
+    per_game = pd.DataFrame(control["per_game"])
+    game_meta = curve.drop_duplicates("game_id")[
+        ["game_id", "season_type", "week", "opponent", "at_home"]
+    ]
+    game_meta = game_meta.merge(
+        per_game[["game_id", "final_margin", "time_weighted_margin", "pct_game_time_leading"]],
+        on="game_id",
+        how="left",
+    ).sort_values(["season_type", "week"], ascending=[False, True])
+
+    # Postseason weeks continue the regular-season numbering (19 = wild card),
+    # which reads as a meaningless "Wk 21" unless it's mapped back to the round.
+    PLAYOFF_ROUNDS = {19: "Wild Card", 20: "Divisional", 21: "NFC Championship", 22: "Super Bowl LX"}
+
+    def game_label(r) -> str:
+        result = "W" if r.final_margin > 0 else "L"
+        stage = (
+            f"Week {int(r.week)}"
+            if r.season_type == "REG"
+            else PLAYOFF_ROUNDS.get(int(r.week), f"Playoffs Wk {int(r.week)}")
+        )
+        # The Super Bowl is played at a neutral site, but the schedule still
+        # designates one team "home" -- so vs/at would read as a lie there.
+        venue = "" if int(r.week) == 22 else ("vs " if r.at_home else "at ")
+        return f"{stage} — {venue}{r.opponent} ({result} {abs(int(r.final_margin))})"
+
+    labels = {game_label(r): r.game_id for r in game_meta.itertuples()}
+    picked_game = st.selectbox("Game", list(labels), key="alltime_game")
+    gid = labels[picked_game]
+    g = curve[curve["game_id"] == gid].sort_values("seconds_elapsed")
+    grow = game_meta[game_meta["game_id"] == gid].iloc[0]
+
+    wp_fig = px.area(g, x="seconds_elapsed", y="wp_sea")
+    wp_fig.update_traces(
+        line_color=GREEN,
+        fillcolor="rgba(105,190,40,0.22)",
+        hovertemplate="Win probability %{y:.0%}<extra></extra>",
+    )
+    wp_fig.add_hline(y=0.5, line_color=GREY, line_width=1, line_dash="dot")
+    for q in (900, 1800, 2700):
+        wp_fig.add_vline(x=q, line_color=GRID, line_width=1)
+    wp_fig.update_layout(
+        title=f"Seattle win probability — {picked_game}",
+        xaxis={
+            "title": "",
+            "tickmode": "array",
+            "tickvals": [0, 900, 1800, 2700, 3600],
+            "ticktext": ["Kickoff", "End Q1", "Half", "End Q3", "Final"],
+        },
+        yaxis={"title": "Win probability", "tickformat": ".0%", "range": [0, 1]},
+        hovermode="x unified",
+    )
+    st.plotly_chart(style_fig(wp_fig, 330), width="stretch")
+
+    g1, g2, g3 = st.columns(3)
+    g1.metric("Final margin", f"{int(grow['final_margin']):+d}")
+    g2.metric("Clock-weighted margin", f"{grow['time_weighted_margin']:+.1f}")
+    g3.metric("Share of clock leading", f"{grow['pct_game_time_leading']:.0f}%")
+
+    st.subheader("Champion comparison")
+    st.caption(
+        "The Sports Illustrated case rested on average end-of-game margin. Weighting that "
+        "margin by how long it was held re-orders the list — and moves Seattle to the top."
+    )
+
+    combined = (
+        advanced.groupby(["season", "team"])
+        .apply(
+            lambda d: pd.Series(
+                {
+                    "avg_final_margin": (d["points_for"].sum() - d["points_against"].sum())
+                    / d["games"].sum(),
+                    "time_weighted_margin": (d["time_weighted_margin"] * d["games"]).sum()
+                    / d["games"].sum(),
+                }
+            ),
+            include_groups=False,
+        )
+        .reset_index()
+    )
+    champs = pd.DataFrame(historical["champions"])
+    champ_rows = combined.merge(champs, on=["season", "team"], how="inner")
+    champ_rows = champ_rows[champ_rows["season"] >= 2000]
+    champ_rows["label"] = champ_rows["season"].astype(str) + " " + champ_rows["team"]
+
+    default_picks = [
+        lab
+        for lab in champ_rows.sort_values("avg_final_margin", ascending=False)["label"].head(8)
+    ]
+    picked_champs = st.multiselect(
+        "Champions to compare (SEA 2025 is always shown)",
+        sorted(champ_rows["label"]),
+        default=default_picks,
+        key="alltime_champs",
+    )
+    shown = champ_rows[champ_rows["label"].isin(set(picked_champs) | {"2025 SEA"})]
+
+    basis = st.radio(
+        "Compare on",
+        ["Clock-weighted margin", "Average final margin"],
+        horizontal=True,
+        key="alltime_basis",
+    )
+    col = "time_weighted_margin" if basis.startswith("Clock") else "avg_final_margin"
+    shown = shown.sort_values(col)
+
+    champ_fig = px.bar(shown, x=col, y="label", orientation="h")
+    champ_fig.update_traces(
+        marker_color=[
+            GREEN if lab == "2025 SEA" else AMBER if lab == "2013 SEA" else GREY
+            for lab in shown["label"]
+        ],
+        hovertemplate="%{y}: %{x:.2f}<extra></extra>",
+    )
+    champ_fig.update_layout(
+        title=f"{basis}, regular season + playoffs",
+        xaxis_title=f"{basis} (points)",
+        yaxis_title="",
+    )
+    st.plotly_chart(style_fig(champ_fig, max(320, 34 * len(shown))), width="stretch")
+
+    st.markdown(
+        f"""
+On the published statistic, Seattle ranks **{si["sea_2025_rank"][0]} of
+{si["n_champions"]}** champions since 2000 — not the 2nd that was reported, because
+**{" and ".join(f"{c['season']} {c['team']}" for c in si["champions_ahead"])}** also finished ahead.
+On the clock-weighted version it ranks
+**{si["stronger_measure"]["sea_2025_rank_among_champions"][0]} of
+{si["stronger_measure"]["sea_2025_rank_among_champions"][1]}** — first.
+"""
+    )
+
+    st.subheader("How wide was the range?")
+    st.caption(
+        "All three losses were one-score games, nine points combined. Replaying the "
+        "same schedule with the same team quality shows how much a 17-game record can swing."
+    )
+
+    ac1, ac2 = st.columns(2)
+    ac1.image(str(OUTPUTS / "counterfactual_record_distribution.png"), width="stretch")
+    ac2.image(str(OUTPUTS / "counterfactual_close_games.png"), width="stretch")
+
+    st.markdown(
+        f"""
+14 wins is the single most likely outcome — but only at
+**{mc["win_distribution"]["14"]:.0f}%** of replays. The mean is
+**{mc["mean_wins"]:.1f}**, the 90% range runs **{mc["p05_wins"]:.0f} to
+{mc["p95_wins"]:.0f} wins**, and **{mc["pct_of_seasons_at_most_11_wins"]:.0f}%** of
+seasons finish at 11 or fewer.
+
+So the record was not a fluke: 14–3 is exactly what this team's quality predicts, and the
+simulation is *built from* their +191 differential rather than doubting it. The point is
+the width. The same team, playing the same seventeen opponents, lands on 12–5 about as
+often as on 15–2. A season is a small sample, and three losses by nine total points is
+what the favourable side of that noise looks like — not a different, worse team.
+"""
+    )
+
+# ---------------------------------------------------------------------------
 # Methodology tab
 # ---------------------------------------------------------------------------
 with tab_method:
@@ -280,9 +615,18 @@ with tab_method:
     st.markdown(
         """
 Play-by-play, schedule, and player-stat data come from `nflverse` via
-`nflreadpy` (CC-BY-4.0), covering 2010–2025 for the historical baseline
-used in the defense anomaly detection, and 2024–2025 specifically for
-everything else. Regular-season games only, unless noted.
+`nflreadpy` (CC-BY-4.0). Coverage widens by phase: 2024–2025 for the
+2024→2025 comparison (Phases 2–7), 2010–2025 for the defense anomaly
+baseline (Phase 5), and **1999–2025 — 861 team-seasons — for the
+all-time comparisons** (Phases 13–16), which is as far back as nflverse
+publishes EPA and win probability. Regular-season games only, unless noted.
+
+Two things in the published coverage of this team **cannot** be reproduced
+here and are cited as external context rather than recomputed: **DVOA**,
+which is proprietary, and **blitz rate**, because the play-by-play carries
+no participation or pass-rusher data. For the same reason, "pressure" in
+this project is a `sack OR qb_hit` proxy and reads lower than a charted
+pressure rate.
 """
     )
 
@@ -419,6 +763,104 @@ to **{sea_decomp["sea_point_diff_per_game_2025"]:.2f}**
     per_feature_df = pd.DataFrame(sea_decomp["per_feature"]).T
     st.dataframe(per_feature_df, width="stretch")
 
+    st.header("Historical baseline (Phase 13)")
+    st.markdown(
+        f"""
+`src/season_metrics.py` builds one row per team-season for **1999–2025** and commits it
+as `data/processed/team_season_advanced.csv`, so nothing downstream needs the raw
+play-by-play. EPA and success rate reuse Phase 4's exact core-play filter (downs 1–4,
+pass/run, win probability 5–95%) so the numbers stay comparable to the earlier phases.
+
+Every metric is reported at **two percentiles**: raw, and era-adjusted via a
+within-season z-score. The NFL's scoring environment moved substantially across this
+window, so a raw percentile quietly flatters modern offenses. Where the two disagree,
+the headline number is deliberately the *less* flattering of the pair.
+
+Ranks count ties as half and run in the metric's own good direction (1 = best).
+Reference set: **{historical["methodology"]["n_team_seasons_reg"]} regular seasons,
+{historical["methodology"]["n_champions"]} champions.**
+"""
+    )
+    claims_df = pd.DataFrame(
+        [
+            {
+                "Claim": c["claim"],
+                "Source": c["source"],
+                "Computed": c["computed"],
+                "Verdict": c["verdict"],
+            }
+            for c in historical["published_claims"]
+        ]
+    )
+    st.dataframe(claims_df, width="stretch", hide_index=True)
+
+    st.header("Game control (Phase 14)")
+    st.markdown(
+        f"""
+Clock-weighted margin is `sum(margin_after_play × seconds_until_next_play) / total_seconds`.
+It separates a team that led wire-to-wire from one that won late by the same score —
+something average final margin cannot do. Overtime carries zero weight, because nflverse
+reports zero seconds remaining throughout OT, making this a *regulation*-clock measure.
+
+Testing the published claim on its own terms: SEA 2025 averaged
+**{si["sea_2025_avg_final_margin"]:+.2f}** points per game including playoffs, which ranks
+**{si["sea_2025_rank"][0]} of {si["n_champions"]}** champions since 2000 — the reported
+figure was 2nd. On the clock-weighted version it ranks
+**{si["stronger_measure"]["sea_2025_rank_among_champions"][0]}**.
+"""
+    )
+    st.image(str(OUTPUTS / "game_control_season_arc.png"), width="stretch")
+
+    st.header("Defense deep dive (Phase 15)")
+    st.markdown(
+        f"""
+The published claim — a best-in-25-years eight-week stretch at −0.34 EPA/play — is tested
+by computing the same rolling window for **every** team-season since 1999, not just
+Seattle's. Two bases are reported, because published streak figures are normally computed
+*without* a garbage-time filter while the rest of this project applies one:
+
+| Basis | SEA 2025 best 8-game window | Rank | Beats 2013 SEA? |
+|---|---|---|---|
+| Unfiltered | {streak["unfiltered"]["sea_2025_best_window"]:+.3f} | {streak["unfiltered"]["sea_2025_rank_of_n"][0]} of {streak["unfiltered"]["sea_2025_rank_of_n"][1]} | {streak["unfiltered"]["beats_2013_seahawks"]} |
+| Garbage-time filtered | {streak["garbage_time_filtered"]["sea_2025_best_window"]:+.3f} | {streak["garbage_time_filtered"]["sea_2025_rank_of_n"][0]} of {streak["garbage_time_filtered"]["sea_2025_rank_of_n"][1]} | {streak["garbage_time_filtered"]["beats_2013_seahawks"]} |
+
+Neither basis reproduces −0.34 exactly, so the *superlative* isn't confirmed. The
+*comparison* the claim makes is: on both bases, this defense's best stretch beat the 2013
+Legion of Boom's. Note the filtered number is the harsher test for a dominant defense,
+which spends more snaps in garbage time precisely because it is dominant.
+"""
+    )
+    st.image(str(OUTPUTS / "defense_rolling_epa.png"), width="stretch")
+
+    st.header("Counterfactual (Phase 16)")
+    cf_model = counterfactual["methodology"]["margin_model_fit"]
+    st.markdown(
+        f"""
+A margin model — `expected margin = own point differential/game − opponent's +
+home-field advantage` — is fit across all {cf_model["n_games"]} games of 2025, recovering a
+home-field edge of **{cf_model["home_field_advantage"]:+.2f}** points and a residual SD of
+**{cf_model["residual_sd"]:.2f}**. Seattle's actual 17-game schedule is then replayed
+{counterfactual["methodology"]["n_simulations"]:,} times.
+
+This is retrospective, not predictive: the ratings already know how the season went, and
+games are treated as independent. Its job is to bound the variance in a 17-game sample.
+The residual SD comes in slightly under the ~13 usually quoted for NFL margins, precisely
+because the ratings are fit in-sample — so the win range it produces is, if anything,
+a little too narrow.
+"""
+    )
+    tl = counterfactual["turnover_luck"]
+    st.markdown(
+        f"""
+**Turnover luck.** Forcing a fumble is a skill; recovering one is close to a coin flip.
+Holding recovery share at the league rate
+({tl["league_fumble_recovery_rate_by_defense"]:.0%}) and leaving the forcing alone moves
+Seattle's turnover margin from **{tl["actual_turnover_margin"]:+d}** to
+**{tl["turnover_margin_at_league_recovery_rate"]:+.1f}** — a bounce component of
+**{tl["bounce_component"]:+.1f}**.
+"""
+    )
+
     st.header("Limitations")
     st.markdown(
         """
@@ -433,5 +875,12 @@ to **{sea_decomp["sea_point_diff_per_game_2025"]:.2f}**
   single-season, single-team analyses layered on a historical baseline —
   neither is a causal claim, only a statement about where this team-season
   sits relative to a well-defined comparison set.
+- The 1999–2025 window is bounded by nflverse's EPA and win-probability
+  coverage, not by when the NFL got interesting. "All-time" throughout this
+  project means "since 1999," and the 1985 Bears and 1972 Dolphins are
+  simply not in the comparison set.
+- Phase 16's Monte Carlo assumes games are independent and uses full-season
+  ratings, so it measures the variance in a 17-game sample rather than
+  forecasting anything.
 """
     )

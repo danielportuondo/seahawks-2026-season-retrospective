@@ -1,0 +1,462 @@
+{
+  "methodology": {
+    "window": "1999-2025 for all-team rankings; 2000-2025 champions for the SI claim",
+    "n_team_seasons_reg": 861,
+    "time_weighted_margin": "sum(margin_after_play * clock_seconds_until_next_play) / total_seconds. Overtime carries zero weight because nflverse reports 0 seconds remaining throughout OT, making this a regulation-clock-weighted measure.",
+    "win_probability_source": "nflverse home_wp/away_wp (model only, not Vegas-informed)",
+    "combining_reg_and_post": "per-game means combined weighted by game count, not averaged"
+  },
+  "si_claim": {
+    "claim": "2nd-highest average end-of-game point differential among Super Bowl champions since 2000, behind only the 2013 Seahawks, both around +13",
+    "source": "Sports Illustrated / @AcccountStat",
+    "reference_set": "Super Bowl champions, 2000-2025, regular season + playoffs",
+    "n_champions": 26,
+    "sea_2025_avg_final_margin": 12.3,
+    "sea_2025_rank": [
+      3,
+      26
+    ],
+    "champions_ahead": [
+      {
+        "season": 2013,
+        "team": "SEA",
+        "avg_final_margin": 12.37
+      },
+      {
+        "season": 2016,
+        "team": "NE",
+        "avg_final_margin": 12.32
+      }
+    ],
+    "sea_2013_avg_final_margin": 12.37,
+    "verdict": "differs",
+    "stronger_measure": {
+      "metric": "time_weighted_margin",
+      "why": "Average final margin cannot distinguish a team that led wire-to-wire from one that won late by the same score. Weighting the margin by how long it was held can.",
+      "sea_2025_value": 7.4,
+      "sea_2025_rank_among_champions": [
+        1,
+        26
+      ],
+      "sea_2013_value": 6.21
+    }
+  },
+  "sea_2025": {
+    "regular_season": {
+      "avg_final_margin": 11.24,
+      "time_weighted_margin": 6.82,
+      "pct_game_time_leading": 57.3,
+      "pct_game_time_wp_gt_75": 41.1,
+      "games_never_trailed": 7
+    },
+    "including_playoffs": {
+      "avg_final_margin": 12.3,
+      "time_weighted_margin": 7.4,
+      "pct_game_time_leading": 63.0,
+      "pct_game_time_wp_gt_75": 44.1
+    },
+    "wire_to_wire": {
+      "games_never_trailed": 9,
+      "of_games": 20,
+      "pct": 45.0,
+      "which": [
+        "W3",
+        "W7",
+        "W9",
+        "W10",
+        "W13",
+        "W17",
+        "W18",
+        "POST W20",
+        "POST W22"
+      ]
+    },
+    "ranks_among_all_team_seasons_1999_2025": {
+      "time_weighted_margin": [
+        13,
+        861
+      ],
+      "pct_game_time_leading": [
+        73,
+        861
+      ],
+      "pct_game_time_wp_gt_75": [
+        48,
+        861
+      ]
+    },
+    "percentiles_among_all_team_seasons_1999_2025": {
+      "time_weighted_margin": 98.5,
+      "pct_game_time_leading": 91.6,
+      "pct_game_time_wp_gt_75": 94.5
+    }
+  },
+  "leaderboards_1999_2025_regular_season": {
+    "time_weighted_margin": [
+      {
+        "rank": 1,
+        "season": 2007,
+        "team": "NE",
+        "value": 10.285
+      },
+      {
+        "rank": 2,
+        "season": 1999,
+        "team": "LA",
+        "value": 9.704
+      },
+      {
+        "rank": 3,
+        "season": 2001,
+        "team": "LA",
+        "value": 8.869
+      },
+      {
+        "rank": 4,
+        "season": 2019,
+        "team": "BAL",
+        "value": 8.222
+      },
+      {
+        "rank": 5,
+        "season": 2016,
+        "team": "NE",
+        "value": 8.0
+      },
+      {
+        "rank": 6,
+        "season": 2012,
+        "team": "NE",
+        "value": 7.623
+      },
+      {
+        "rank": 7,
+        "season": 2010,
+        "team": "NE",
+        "value": 7.42
+      },
+      {
+        "rank": 8,
+        "season": 2011,
+        "team": "GB",
+        "value": 7.411
+      },
+      {
+        "rank": 9,
+        "season": 2015,
+        "team": "CAR",
+        "value": 7.305
+      },
+      {
+        "rank": 10,
+        "season": 2014,
+        "team": "GB",
+        "value": 7.263
+      }
+    ],
+    "pct_game_time_leading": [
+      {
+        "rank": 1,
+        "season": 1999,
+        "team": "LA",
+        "value": 75.781
+      },
+      {
+        "rank": 2,
+        "season": 2016,
+        "team": "NE",
+        "value": 73.569
+      },
+      {
+        "rank": 3,
+        "season": 2007,
+        "team": "NE",
+        "value": 72.097
+      },
+      {
+        "rank": 4,
+        "season": 2001,
+        "team": "LA",
+        "value": 71.085
+      },
+      {
+        "rank": 5,
+        "season": 2011,
+        "team": "GB",
+        "value": 69.123
+      },
+      {
+        "rank": 6,
+        "season": 2004,
+        "team": "NE",
+        "value": 68.535
+      },
+      {
+        "rank": 7,
+        "season": 2023,
+        "team": "BAL",
+        "value": 67.685
+      },
+      {
+        "rank": 8,
+        "season": 2013,
+        "team": "DEN",
+        "value": 66.196
+      },
+      {
+        "rank": 9,
+        "season": 2005,
+        "team": "IND",
+        "value": 66.146
+      },
+      {
+        "rank": 10,
+        "season": 2015,
+        "team": "CAR",
+        "value": 66.026
+      }
+    ]
+  },
+  "per_game": [
+    {
+      "season": 2025,
+      "season_type": "REG",
+      "week": 1,
+      "game_id": "2025_01_SF_SEA",
+      "team": "SEA",
+      "time_weighted_margin": 0.3975,
+      "pct_game_time_leading": 36.833333333333336,
+      "pct_game_time_wp_gt_75": 0.9444444444444444,
+      "never_trailed": 0.0,
+      "final_margin": -4.0
+    },
+    {
+      "season": 2025,
+      "season_type": "REG",
+      "week": 2,
+      "game_id": "2025_02_SEA_PIT",
+      "team": "SEA",
+      "time_weighted_margin": 2.115,
+      "pct_game_time_leading": 61.972222222222214,
+      "pct_game_time_wp_gt_75": 21.27777777777778,
+      "never_trailed": 0.0,
+      "final_margin": 14.0
+    },
+    {
+      "season": 2025,
+      "season_type": "REG",
+      "week": 3,
+      "game_id": "2025_03_NO_SEA",
+      "team": "SEA",
+      "time_weighted_margin": 26.059166666666663,
+      "pct_game_time_leading": 91.5,
+      "pct_game_time_wp_gt_75": 90.61111111111111,
+      "never_trailed": 1.0,
+      "final_margin": 31.0
+    },
+    {
+      "season": 2025,
+      "season_type": "REG",
+      "week": 4,
+      "game_id": "2025_04_SEA_ARI",
+      "team": "SEA",
+      "time_weighted_margin": 6.6802777777777775,
+      "pct_game_time_leading": 77.05555555555556,
+      "pct_game_time_wp_gt_75": 53.388888888888886,
+      "never_trailed": 0.0,
+      "final_margin": 3.0
+    },
+    {
+      "season": 2025,
+      "season_type": "REG",
+      "week": 5,
+      "game_id": "2025_05_TB_SEA",
+      "team": "SEA",
+      "time_weighted_margin": -3.0252777777777777,
+      "pct_game_time_leading": 12.27777777777778,
+      "pct_game_time_wp_gt_75": 2.166666666666667,
+      "never_trailed": 0.0,
+      "final_margin": -3.0
+    },
+    {
+      "season": 2025,
+      "season_type": "REG",
+      "week": 6,
+      "game_id": "2025_06_SEA_JAX",
+      "team": "SEA",
+      "time_weighted_margin": 5.0625,
+      "pct_game_time_leading": 64.5,
+      "pct_game_time_wp_gt_75": 47.97222222222222,
+      "never_trailed": 0.0,
+      "final_margin": 8.0
+    },
+    {
+      "season": 2025,
+      "season_type": "REG",
+      "week": 7,
+      "game_id": "2025_07_HOU_SEA",
+      "team": "SEA",
+      "time_weighted_margin": 9.911666666666669,
+      "pct_game_time_leading": 87.69444444444444,
+      "pct_game_time_wp_gt_75": 81.30555555555556,
+      "never_trailed": 1.0,
+      "final_margin": 8.0
+    },
+    {
+      "season": 2025,
+      "season_type": "REG",
+      "week": 9,
+      "game_id": "2025_09_SEA_WAS",
+      "team": "SEA",
+      "time_weighted_margin": 17.748333333333335,
+      "pct_game_time_leading": 80.25,
+      "pct_game_time_wp_gt_75": 71.36111111111111,
+      "never_trailed": 1.0,
+      "final_margin": 24.0
+    },
+    {
+      "season": 2025,
+      "season_type": "REG",
+      "week": 10,
+      "game_id": "2025_10_ARI_SEA",
+      "team": "SEA",
+      "time_weighted_margin": 22.282222222222224,
+      "pct_game_time_leading": 93.3611111111111,
+      "pct_game_time_wp_gt_75": 90.61111111111111,
+      "never_trailed": 1.0,
+      "final_margin": 22.0
+    },
+    {
+      "season": 2025,
+      "season_type": "REG",
+      "week": 11,
+      "game_id": "2025_11_SEA_LA",
+      "team": "SEA",
+      "time_weighted_margin": -5.834444444444444,
+      "pct_game_time_leading": 0.0,
+      "pct_game_time_wp_gt_75": 0.0,
+      "never_trailed": 0.0,
+      "final_margin": -2.0
+    },
+    {
+      "season": 2025,
+      "season_type": "REG",
+      "week": 12,
+      "game_id": "2025_12_SEA_TEN",
+      "team": "SEA",
+      "time_weighted_margin": 8.718055555555555,
+      "pct_game_time_leading": 68.6388888888889,
+      "pct_game_time_wp_gt_75": 63.583333333333336,
+      "never_trailed": 0.0,
+      "final_margin": 6.0
+    },
+    {
+      "season": 2025,
+      "season_type": "REG",
+      "week": 13,
+      "game_id": "2025_13_MIN_SEA",
+      "team": "SEA",
+      "time_weighted_margin": 10.556111111111113,
+      "pct_game_time_leading": 62.0,
+      "pct_game_time_wp_gt_75": 54.97222222222222,
+      "never_trailed": 1.0,
+      "final_margin": 26.0
+    },
+    {
+      "season": 2025,
+      "season_type": "REG",
+      "week": 14,
+      "game_id": "2025_14_SEA_ATL",
+      "team": "SEA",
+      "time_weighted_margin": 8.18388888888889,
+      "pct_game_time_leading": 50.0,
+      "pct_game_time_wp_gt_75": 39.33333333333333,
+      "never_trailed": 0.0,
+      "final_margin": 28.0
+    },
+    {
+      "season": 2025,
+      "season_type": "REG",
+      "week": 15,
+      "game_id": "2025_15_IND_SEA",
+      "team": "SEA",
+      "time_weighted_margin": -2.2333333333333334,
+      "pct_game_time_leading": 3.3333333333333335,
+      "pct_game_time_wp_gt_75": 0.5,
+      "never_trailed": 0.0,
+      "final_margin": 2.0
+    },
+    {
+      "season": 2025,
+      "season_type": "REG",
+      "week": 16,
+      "game_id": "2025_16_LA_SEA",
+      "team": "SEA",
+      "time_weighted_margin": -2.3025,
+      "pct_game_time_leading": 38.638888888888886,
+      "pct_game_time_wp_gt_75": 3.6111111111111103,
+      "never_trailed": 0.0,
+      "final_margin": 0.0
+    },
+    {
+      "season": 2025,
+      "season_type": "REG",
+      "week": 17,
+      "game_id": "2025_17_SEA_CAR",
+      "team": "SEA",
+      "time_weighted_margin": 4.8886111111111115,
+      "pct_game_time_leading": 64.08333333333334,
+      "pct_game_time_wp_gt_75": 37.80555555555555,
+      "never_trailed": 1.0,
+      "final_margin": 17.0
+    },
+    {
+      "season": 2025,
+      "season_type": "REG",
+      "week": 18,
+      "game_id": "2025_18_SEA_SF",
+      "team": "SEA",
+      "time_weighted_margin": 6.7122222222222225,
+      "pct_game_time_leading": 82.69444444444444,
+      "pct_game_time_wp_gt_75": 38.83333333333333,
+      "never_trailed": 1.0,
+      "final_margin": 10.0
+    },
+    {
+      "season": 2025,
+      "season_type": "POST",
+      "week": 20,
+      "game_id": "2025_20_SF_SEA",
+      "team": "SEA",
+      "time_weighted_margin": 19.34888888888889,
+      "pct_game_time_leading": 100.0,
+      "pct_game_time_wp_gt_75": 92.5,
+      "never_trailed": 1.0,
+      "final_margin": 35.0
+    },
+    {
+      "season": 2025,
+      "season_type": "POST",
+      "week": 21,
+      "game_id": "2025_21_LA_SEA",
+      "team": "SEA",
+      "time_weighted_margin": 4.350555555555555,
+      "pct_game_time_leading": 89.11111111111111,
+      "pct_game_time_wp_gt_75": 38.05555555555556,
+      "never_trailed": 0.0,
+      "final_margin": 4.0
+    },
+    {
+      "season": 2025,
+      "season_type": "POST",
+      "week": 22,
+      "game_id": "2025_22_SEA_NE",
+      "team": "SEA",
+      "time_weighted_margin": 8.325833333333334,
+      "pct_game_time_leading": 95.05555555555556,
+      "pct_game_time_wp_gt_75": 53.333333333333336,
+      "never_trailed": 1.0,
+      "final_margin": 16.0
+    }
+  ]
+}

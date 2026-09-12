@@ -1,0 +1,81 @@
+{
+  "methodology": {
+    "pythagorean_exponent": 2.37,
+    "n_simulations": 20000,
+    "random_state": 42,
+    "margin_model": "expected margin = own season point differential/game - opponent's + home-field advantage",
+    "margin_model_fit": {
+      "home_field_advantage": 2.099,
+      "residual_sd": 11.474,
+      "n_games": 272,
+      "mean_abs_error": 9.105
+    },
+    "what_this_is_not": "Retrospective, not predictive: ratings are full-season, so the model already knows how the season went. Games are treated as independent, ignoring injuries, weather and in-season improvement. It bounds the variance in a 17-game sample; it does not forecast."
+  },
+  "pythagorean": {
+    "points_for": 483,
+    "points_against": 292,
+    "expected_wins": 13.04,
+    "actual_wins": 14,
+    "wins_over_expectation": 0.96
+  },
+  "monte_carlo": {
+    "mean_wins": 13.6,
+    "median_wins": 14.0,
+    "sd_wins": 1.53,
+    "p05_wins": 11.0,
+    "p95_wins": 16.0,
+    "pct_of_seasons_at_least_14_wins": 54.2,
+    "pct_of_seasons_at_most_11_wins": 8.8,
+    "win_distribution": {
+      "7": 0.03,
+      "8": 0.07,
+      "9": 0.47,
+      "10": 2.07,
+      "11": 6.2,
+      "12": 14.0,
+      "13": 22.95,
+      "14": 25.24,
+      "15": 18.95,
+      "16": 8.37,
+      "17": 1.66
+    }
+  },
+  "close_games": {
+    "losses": [
+      {
+        "week": 1,
+        "opponent": "SF",
+        "margin": -4
+      },
+      {
+        "week": 5,
+        "opponent": "TB",
+        "margin": -3
+      },
+      {
+        "week": 11,
+        "opponent": "LA",
+        "margin": -2
+      }
+    ],
+    "total_points_lost_by": 9,
+    "one_score_games": 9,
+    "one_score_record": "6-3",
+    "blowout_wins_3plus_scores": 6,
+    "note": "A one-score game is decided by 8 points or fewer. Going well in these is weakly predictive year over year, which is why a strong one-score record is usually read as partly variance."
+  },
+  "turnover_luck": {
+    "league_fumble_recovery_rate_by_defense": 0.466,
+    "sea_own_fumbles": 25,
+    "sea_own_fumbles_lost": 11,
+    "sea_own_fumble_loss_rate": 0.44,
+    "sea_forced_fumbles": 11,
+    "sea_forced_fumbles_recovered": 9,
+    "sea_forced_fumble_recovery_rate": 0.818,
+    "actual_turnover_margin": -1,
+    "turnover_margin_at_league_recovery_rate": -5.53,
+    "bounce_component": 4.53,
+    "note": "Forcing a fumble is a skill; recovering one is close to a coin flip. This holds the recovery share at the league rate and leaves the forcing alone."
+  }
+}

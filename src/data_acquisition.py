@@ -1,7 +1,9 @@
 """Phase 1: pull and cache raw data to /data/raw so later phases never re-pull.
 
-Historical window: 2010-2025 (confirmed with user for the Phase 5 defense
-baseline). Play-by-play is cached one file per season so a partial run
+Historical window: 1999-2025. Originally 2010-2025 for the Phase 5 defense
+baseline; extended back to 1999 for the Phase 13-16 all-time comparison, which
+needs every team-season nflverse publishes EPA/win-probability for as its
+denominator. Play-by-play is cached one file per season so a partial run
 resumes cleanly instead of re-downloading everything.
 """
 
@@ -12,14 +14,20 @@ import pandas as pd
 
 RAW_DIR = Path(__file__).resolve().parent.parent / "data" / "raw"
 PBP_DIR = RAW_DIR / "pbp"
-SEASONS = list(range(2010, 2026))
+SEASONS = list(range(1999, 2026))
 
 
 def fetch_schedules() -> None:
     path = RAW_DIR / "schedules.parquet"
+    # Unlike pbp (one file per season), schedules is a single file covering the
+    # whole window -- so "it exists" isn't enough once SEASONS grows backwards.
+    # Re-pull whenever the cached file starts later than the requested floor.
     if path.exists():
-        print(f"skip schedules (cached at {path})")
-        return
+        cached_min = int(pd.read_parquet(path, columns=["season"])["season"].min())
+        if cached_min <= min(SEASONS):
+            print(f"skip schedules (cached at {path}, covers {cached_min}+)")
+            return
+        print(f"refetching schedules: cached file starts at {cached_min}, need {min(SEASONS)}")
     df = nfl.load_schedules(seasons=SEASONS).to_pandas()
     df.to_parquet(path, index=False)
     print(f"schedules: {len(df)} rows -> {path}")

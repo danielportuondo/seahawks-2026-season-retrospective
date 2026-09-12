@@ -95,6 +95,68 @@ anything, the model suggests Seattle's underlying performance jump was
 have quietly left a little more improvement on the table than the record
 shows.
 
+### Were they actually all-time great?
+
+Everything above compares 2025 to 2024. That's the right frame for asking what
+changed, and the wrong one for the question the rest of the football world spent
+the offseason on: was this one of the great teams? Answering that needs a
+denominator, so the analysis was extended to every team-season nflverse covers —
+861 regular seasons from 1999 through 2025, and the 27 Super Bowl champions in
+that span.
+
+**On how their games went, the case is overwhelming.** Seattle allowed explosive
+plays — 15-plus-yard passes, 10-plus-yard runs — at a rate bettered by only
+**11 team-seasons in 27 years**. They held a bigger lead for longer than all but
+**12**. Among Super Bowl champions since 2000, nobody has controlled games more
+completely. This was a team that made the game small and then sat on it.
+
+**On taking the ball away, the case collapses.** Their full-season turnover margin
+was **−1**: 25 takeaways against 26 giveaways, a hair below league average and
+the 46th percentile historically. They forced three-and-outs at the 49th
+percentile. The widely repeated "they fixed their turnovers" line is true about
+the *end* of the season — Phase 6 showed that trend — but it is not true about the
+season. Seattle won 14 games with a negative turnover margin.
+
+Three specific published claims were checked against the data rather than
+repeated:
+
+| Claim | Verdict |
+|---|---|
+| +191 regular season / +246 with playoffs, best by a champion since the 1999 Rams | **Supported** — both figures reproduce exactly |
+| 17.2 points per game allowed, NFL's No. 1 scoring defense | **Supported** — 17.2, ranked 1st |
+| 2nd-best average end-of-game margin among champions since 2000, behind only the 2013 Seahawks | **Differs** — 3rd. The 2016 Patriots also finished ahead |
+| Best 8-week defensive stretch in 25 years, at −0.34 EPA/play | **Not confirmed as a superlative** — see below |
+
+The last two are worth dwelling on, because in both cases the underlying instinct
+was right and the specific number was not.
+
+The "average end-of-game margin" statistic is just point differential per game
+wearing a better name. It cannot tell a team that led 24–0 at halftime from one
+that trailed and scored 24 unanswered. But the article's own argument — that
+Seattle "gets on top early, piles on, and keeps it up" — is a claim about the
+*shape* of a game, and that is measurable: weight the score margin by how long it
+was held. Do that, and Seattle ranks **1st among all 26 champions since 2000**,
+ahead of the 2013 team. The published stat put them 3rd; the stat the published
+argument was actually reaching for puts them 1st.
+
+Similarly, the −0.34 EPA/play eight-week defensive stretch does not reproduce
+here on either of the two reasonable definitions. Computing the same rolling
+window for every team-season since 1999 puts Seattle's best stretch 19th of 861
+unfiltered, or 2nd of 861 once garbage time is excluded — excellent, but not a
+clean "best in 25 years." What *does* hold on both definitions is the comparison
+the claim was built around: this defense's best stretch was better than the 2013
+Legion of Boom's.
+
+**And the record sat inside a wide range.** Replaying the season 20,000 times —
+same team, same opponents, same +191 quality, only the bounces re-rolled — makes
+14–3 the single most likely outcome, but only 25% of the time. The 90% range runs
+from 11 wins to 16. The same team lands on 12–5 about as often as on 15–2. Three
+losses by nine total points is not evidence of a team that couldn't lose; it's
+what the favourable side of a 17-game sample looks like. That is not an argument
+that Seattle was lucky — the simulation assumes they were exactly as good as they
+were. It's an argument that a season is a small sample, and greatness and record
+are not the same measurement.
+
 ### The honest caveats
 
 This project tries to show its work rather than round off inconvenient
@@ -115,6 +177,19 @@ detail, so a few things are worth stating plainly:
   more games than its scoring margin alone would predict. That pattern is
   present in *both* years, so it's a recurring team characteristic worth
   noting, not something the 2025 turnaround erased.
+- "All-time" in this report means "since 1999," which is as far back as
+  nflverse publishes EPA and win probability. The 1985 Bears and the 1972
+  Dolphins are not in the comparison set, and no claim here should be read as
+  ranking against them.
+- Two widely cited figures about this team could not be checked at all, and
+  are reported as external context rather than reproduced: **DVOA**, which is
+  proprietary, and **blitz rate**, because the play-by-play carries no
+  participation or pass-rusher data. For the same reason "pressure" throughout
+  this project is a `sack OR qb_hit` proxy, which is narrower than a charted
+  pressure and reads lower than published rates.
+- Where a computed result disagreed with a published one, the computed value
+  is reported and the disagreement is named. That happened twice, and in both
+  cases the published direction was right while the specific number was not.
 
 ---
 
@@ -127,9 +202,11 @@ files (`outputs/*.json`), not re-derived for this writeup.*
 ### Data and scope
 
 Play-by-play, schedule, and player-stat data come from `nflverse` via the
-`nflreadpy` package (CC-BY-4.0), covering 2010–2025 for the historical
-baseline used in Phase 5, and 2024–2025 specifically for everything else.
-Regular-season games only, unless a section says otherwise.
+`nflreadpy` package (CC-BY-4.0). Coverage widens by phase: 2024–2025 for the
+year-over-year comparison (Phases 2–7), 2010–2025 for the defense anomaly
+baseline (Phase 5), and **1999–2025 — 861 team-seasons — for the all-time
+comparisons** (Phases 13–16), which is as far back as nflverse publishes EPA and
+win probability. Regular-season games only, unless a section says otherwise.
 
 ### Pythagorean win expectation (Phase 2)
 
@@ -271,6 +348,115 @@ differential captures.
   explainability work: at n = 64, a tree ensemble would overfit, and a linear
   model's coefficients already *are* the decomposition — no separate
   explainability layer is needed on top of them.
+
+### Historical baseline (Phase 13)
+
+`src/season_metrics.py` builds one row per team-season for 1999–2025 and commits
+it as `data/processed/team_season_advanced.csv`, so every downstream consumer —
+the four new phase scripts, the dashboard, the tests — reads a small CSV rather
+than the multi-gigabyte play-by-play cache. EPA and success rate reuse Phase 4's
+exact core-play filter (downs 1–4, pass/run, win probability 5–95%), so the
+numbers stay directly comparable to the earlier phases instead of being a second,
+subtly different definition of the same statistic.
+
+Two era details the wider window forces, both already solved in Phase 5: the
+relocation map (STL→LA, SD→LAC, OAK→LV) keeps a franchise as one entity, and the
+league had 31 teams in 1999–2001 before Houston arrived, so the regular-season row
+count is 3×31 + 24×32 = **861**, not 32×27. A blank-string team code in the 2000
+play-by-play, which `notna()` lets through, produced a phantom 32nd team in that
+season until it was caught by that row-count assertion.
+
+Every metric is reported at **two percentiles**: raw, and era-adjusted via a
+within-season z-score. The scoring environment moved substantially across this
+window, so a raw percentile quietly flatters modern offenses. Where the two
+disagree the headline figure is deliberately the *less* flattering of the pair.
+Ranks count ties as half and run in each metric's own good direction (1 = best).
+
+- Top-15 all-time for SEA 2025: explosive plays allowed (**12th of 861**) and
+  clock-weighted lead (**13th**). Point differential per game ranks 25th.
+- Middle of the pack: turnover margin (**450th**) and three-and-outs forced
+  (**438th**).
+- The era adjustment moves things in both directions — points per drive allowed
+  looks better era-adjusted (98th vs 88th percentile), points per drive scored
+  looks worse (72nd vs 87th).
+
+### Game control (Phase 14)
+
+Clock-weighted margin is `Σ(margin after play × seconds until next play) /
+total seconds` — the score margin integrated against the game clock rather than
+against plays. It separates a team that led wire-to-wire from one that won late
+by the same score, which average final margin cannot do. Overtime carries zero
+weight, because nflverse reports zero seconds remaining throughout OT; the metric
+is therefore regulation-clock-weighted, and is described that way rather than as
+a whole-game measure.
+
+Combining regular season and playoffs weights each phase by its game count —
+averaging the two averages would give a three-game postseason the same say as a
+seventeen-game regular season.
+
+- The published claim, tested on its own terms: SEA 2025 averaged **+12.30**
+  points per game including playoffs, ranking **3rd of 26** champions since
+  2000, behind 2013 SEA (+12.37) and 2016 NE. The reported figure was 2nd.
+- On clock-weighted margin, SEA 2025 is **1st of 26** champions at **+7.40**,
+  ahead of 2013 SEA's +6.21.
+- Across all 861 regular seasons: clock-weighted margin 13th, share of clock
+  with win probability above 75% 48th, share of clock leading 73rd.
+- Seattle never trailed at any point in **9 of its 20 games**.
+
+### Defense deep dive (Phase 15)
+
+The "best eight-week stretch in 25 years" claim is tested by computing the same
+rolling eight-game window for *every* team-season since 1999, not just Seattle's
+— computing it for one team and repeating the label would assume the conclusion.
+Windows never cross seasons, and the postseason is excluded so deep playoff runs
+don't supply extra windows to draw from.
+
+Two bases are reported, because published streak numbers are normally computed
+without a garbage-time filter while the rest of this project applies one:
+
+| Basis | SEA 2025 best window | Rank of 861 | Beats 2013 SEA? |
+|---|---|---|---|
+| Unfiltered | −0.245 (weeks 11–18) | 19th | Yes (−0.195) |
+| Garbage-time filtered | −0.452 (weeks 7–15) | 2nd | Yes (−0.254) |
+
+Neither reproduces the published −0.34, so the superlative isn't confirmed; the
+relative comparison the claim was built on is, on both bases. Note the filtered
+version is the *harsher* test for a dominant defense, which spends more of its
+snaps in garbage time precisely because it is dominant.
+
+Season-long, the defense ranks 1st in the 2025 NFL in EPA/play allowed, points
+allowed per game, points per drive allowed, and yards per carry allowed, and 2nd
+in explosive plays allowed and opponent scoring-drive rate — but only 6th in
+takeaways and 11th in three-and-outs forced.
+
+### Counterfactual (Phase 16)
+
+Three independent angles on how much of 14–3 was the team and how much was the
+bounce.
+
+**Pythagorean** (reusing `src/pythagorean.py`, NFL exponent 2.37): 483 points for
+and 292 against imply **13.04 expected wins** against 14 actual, a +0.96 gap
+consistent with the pattern Phase 2 found in both seasons.
+
+**Monte Carlo**: a margin model — `expected margin = own point differential per
+game − opponent's + home-field advantage` — fit across all 272 games of 2025
+recovers a home-field edge of **+2.10** points and a residual SD of **11.47**.
+Seattle's actual 17-game schedule is then replayed 20,000 times. This is
+retrospective rather than predictive (the ratings already know how the season
+went) and treats games as independent; its job is to bound the variance in a
+17-game sample. The residual SD comes in under the ~13 usually quoted for NFL
+margins precisely because the ratings are fit in-sample, so the resulting win
+range is, if anything, slightly too narrow.
+
+- 14 wins is the modal outcome at **25.2%**; the mean is **13.60**.
+- 90% range: **11 to 16 wins**. 8.8% of replays finish at 11 or fewer.
+- Seattle went **6–3** in one-score games, with all three losses in that bucket.
+
+**Turnover luck**: forcing a fumble is a skill, recovering one is close to a coin
+flip. Holding the recovery share at the league rate and leaving the forcing alone
+moves Seattle's turnover margin from **−1** to **−5.5** — a bounce component of
+**+4.5**. So the already-mediocre turnover margin was, if anything, flattered by
+how loose balls fell.
 
 ### Limitations
 

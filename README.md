@@ -14,10 +14,20 @@ decomposition).
 
 ![Dashboard screenshot](docs/dashboard_screenshot.png)
 
-A two-tab Streamlit app: **The Story** (plain-language narrative, headline
-charts, an interactive season-trend explorer) and **Methodology** (the
-statistical detail behind it). Reads only from `outputs/` and
-`data/processed/` — no live recomputation.
+A three-tab Streamlit app:
+
+- **The Story** — plain-language narrative, headline charts, an interactive
+  season-trend explorer.
+- **All-Time Great?** — where the 2025 team sits among all 861 team-seasons
+  since 1999. Interactive metric explorer, per-game win-probability curves,
+  and a champion comparison you can re-rank between the published statistic
+  and the clock-weighted version.
+- **Methodology** — the statistical detail behind all of it, including a
+  claim-by-claim table of which published figures the data supports.
+
+![All-Time Great? tab](docs/dashboard_alltime.png)
+
+Reads only from `outputs/` and `data/processed/` — no live recomputation.
 
 ## Repo layout
 
@@ -26,7 +36,7 @@ statistical detail behind it). Reads only from `outputs/` and
 - `src/` — pipeline and analysis code, one script per phase
 - `outputs/` — analysis results (JSON) and charts
 - `dashboard/` — Streamlit app (`app.py`)
-- `tests/` — unit tests for the pure calculation functions (Pythagorean expectation, turnover-probability model, OLS decomposition)
+- `tests/` — unit tests for the pure calculation functions (Pythagorean expectation, turnover-probability model, OLS decomposition, clock-weighted margin / percentile / rolling-window kernels)
 - `docs/` — README assets
 - `REFERENCES.md` — data source and citation log
 - `HANDOFF.md` — the original phase-by-phase project plan
@@ -54,10 +64,22 @@ uv run python src/phase4_deep_dive.py      # Phase 4: EPA/turnover/red-zone/pres
 uv run python src/phase5_anomaly_detection.py  # Phase 5: defense anomaly detection (z-scores, Mahalanobis)
 uv run python src/phase6_turnover_rate_model.py # Phase 6: zero-turnover playoff probability
 uv run python src/phase7_decomposition.py  # Phase 7: regression decomposition of the 2024->2025 jump
+
+uv run python src/season_metrics.py        # build the 1999-2025 team-season tables
+uv run python src/phase13_historical_baseline.py  # Phase 13: percentile rank vs 861 team-seasons
+uv run python src/phase14_game_control.py  # Phase 14: clock-weighted margin and game control
+uv run python src/phase15_defense.py       # Phase 15: rolling defensive EPA vs every team-season
+uv run python src/phase16_counterfactual.py # Phase 16: Pythagorean, Monte Carlo, turnover luck
 ```
 
 Phases 5 and 6 only depend on Phase 1's cached data and can run in either
 order; Phases 2–4 and 7 depend on the outputs before them in the list.
+
+Phases 13–16 all read `season_metrics.py`'s committed CSVs, so once those exist
+the four can run in any order. Note that `data_acquisition.py` now pulls
+**1999–2025** rather than 2010–2025 — the first run after this change downloads
+eleven additional seasons of play-by-play (cached per season, so it resumes
+cleanly if interrupted).
 
 ## Running the dashboard
 
@@ -74,5 +96,6 @@ uvx ruff check .
 
 ## Status
 
-All 11 phases complete. See `HANDOFF.md` for the original phase-by-phase
-plan this project followed.
+Phases 1–16 complete. `HANDOFF.md` holds the original phase-by-phase plan
+(through Phase 11); Phases 12–16 — the visual redesign and the all-time
+comparison — were scoped afterwards.
