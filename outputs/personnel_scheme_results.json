@@ -1,0 +1,32 @@
+{
+  "2024": {
+    "qb": "Geno Smith",
+    "oc": "Ryan Grubb",
+    "completions": 407,
+    "attempts": 578,
+    "completion_pct": 70.4,
+    "passing_yards": 4320,
+    "interceptions": 15,
+    "int_rate_pct": 2.6,
+    "fumbles_lost": 0,
+    "sacks_suffered": 50,
+    "dropbacks": 673,
+    "pressured_dropbacks": 113,
+    "pressure_rate_pct": 16.8
+  },
+  "2025": {
+    "qb": "Sam Darnold",
+    "oc": "Klint Kubiak",
+    "completions": 323,
+    "attempts": 477,
+    "completion_pct": 67.7,
+    "passing_yards": 4048,
+    "interceptions": 14,
+    "int_rate_pct": 2.94,
+    "fumbles_lost": 6,
+    "sacks_suffered": 27,
+    "dropbacks": 520,
+    "pressured_dropbacks": 63,
+    "pressure_rate_pct": 12.1
+  }
+}

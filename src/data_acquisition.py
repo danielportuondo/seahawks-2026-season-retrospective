@@ -38,13 +38,18 @@ def fetch_pbp() -> None:
 
 
 def fetch_player_stats() -> None:
-    path = RAW_DIR / "player_stats_2024_2025.parquet"
-    if path.exists():
-        print(f"skip player_stats (cached at {path})")
-        return
-    df = nfl.load_player_stats(seasons=[2024, 2025], summary_level="reg+post").to_pandas()
-    df.to_parquet(path, index=False)
-    print(f"player_stats: {len(df)} rows -> {path}")
+    # "reg+post" merges a player's regular+postseason into one row whenever
+    # they appeared in both (e.g. Darnold 2025) instead of giving separate
+    # REG and POST rows — fine for full-season totals, but it means a clean
+    # like-for-like regular-season comparison needs its own "reg"-only pull.
+    for summary_level, suffix in [("reg+post", ""), ("reg", "_reg")]:
+        path = RAW_DIR / f"player_stats_2024_2025{suffix}.parquet"
+        if path.exists():
+            print(f"skip player_stats{suffix} (cached at {path})")
+            continue
+        df = nfl.load_player_stats(seasons=[2024, 2025], summary_level=summary_level).to_pandas()
+        df.to_parquet(path, index=False)
+        print(f"player_stats{suffix}: {len(df)} rows -> {path}")
 
 
 def validate_ground_truth() -> None:
