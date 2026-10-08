@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -229,6 +230,19 @@ with tab_story:
 
     st.divider()
 
+    st.info(
+        """
+**The short answer.** Seattle went 10–7 to 14–3 and won Super Bowl LX because
+it got better at the two things that decide football games: yards per play
+gained and yards per play allowed. Fixing the pass protection was the single
+biggest lever. The takeaways everyone credited — turnovers, splash plays —
+were never the story. This was a genuinely elite team that also caught a
+normal amount of good luck in a 17-game sample.
+"""
+    )
+
+    st.divider()
+
     st.header("2024: a good team that still went home early")
     st.markdown(
         """
@@ -249,17 +263,30 @@ struggled to protect him — pressured on nearly 1 in 6 dropbacks (16.8%).
     st.header("2025: everything clicked")
     st.markdown(
         """
-The 2025 Seahawks won 14 games, the NFC West, and Super Bowl LX. Sam Darnold
-took over at quarterback (signed after Smith was traded), Klint Kubiak became
-OC, and the same DC (Aden Durde) got dramatically better results from
-essentially the same defensive unit.
+The 2025 Seahawks won 14 games, the NFC West, and Super Bowl LX — and they did
+it after gutting the skill positions that defined the previous era. In one week
+of March 2025 the front office released Tyler Lockett, traded DK Metcalf to
+Pittsburgh, and traded Geno Smith to Las Vegas. Sam Darnold came in at
+quarterback, Cooper Kupp signed on, Klint Kubiak took over as OC, and Jaxon
+Smith-Njigba — the third option on his own depth chart a year earlier — became
+the whole passing game. He responded by leading the NFL in receiving yards and
+breaking Metcalf's franchise record along the way.
 
-Not everything improved cleanly: Darnold's completion percentage was actually
-*lower* than Smith's (67.7% vs. 70.4%), and his interception rate was
-slightly *higher* (2.94% vs. 2.6%). The jump was concentrated in a smaller
-number of things that mattered enormously — pass protection (pressure
-rate 16.8% → 12.1%, sacks allowed 50 → 27) and overall per-play
-efficiency.
+The defense barely changed personnel at all. Mike Macdonald kept calling it,
+and essentially the same unit played dramatically better.
+
+The real fix was up front. Seattle rebuilt the interior of the offensive line
+around first-round rookie left guard **Grey Zabel** and new starting center
+**Jalen Sundell**, with **Charles Cross** and a healthy **Abraham Lucas** at
+the tackles and **Anthony Bradford** at right guard. A line that had been among
+the league's worst in 2024 turned into a middle-of-the-pack pass-blocking unit,
+and that was enough: pressure rate fell 16.8% → 12.1% and sacks allowed went
+50 → 27.
+
+Not everything improved cleanly. Darnold's completion percentage was actually
+*lower* than Smith's (67.7% vs. 70.4%), and his interception rate was slightly
+*higher* (2.94% vs. 2.6%). The jump was concentrated in a small number of
+things that mattered enormously — protection, and overall per-play efficiency.
 """
     )
     st.image(str(OUTPUTS / "personnel_scheme_comparison.png"), width="stretch")
@@ -268,19 +295,89 @@ efficiency.
     st.markdown(
         """
 The "Dark Side" defense was the best defense in the NFL in 2025 by both
-EPA/play and points allowed per game. It's tempting to call it the greatest
-defense ever — that didn't hold up under a closer look. Ranked against
-every team-defense back to 2010 (over 500 team-seasons), it lands in the
-**top 10%**, but not the top 10 outright. That distinction belongs to
-Seattle's *own* 2013 "Legion of Boom" defense, which remains the more
-statistically extreme unit in franchise history. Elite, genuinely — just
-not unprecedented.
+EPA/play and points allowed per game. *(EPA/play is just "how much did the
+average snap help or hurt your chances of scoring" — a defense with a negative
+number is taking points off the board every time it lines up.)*
+
+It's tempting to call it the greatest defense ever. That didn't survive a
+closer look. Ranked against every team-defense back to 2010, it lands in the
+**top 10%**, but not the top 10 outright.
+
+**So, better than the Legion of Boom or not?** Both, depending on the question,
+and it's worth saying plainly instead of hedging:
+
+- **Over a full season, no.** Seattle's own 2013 defense is still the more
+  statistically extreme unit in franchise history.
+- **Over its best stretch, yes.** The 2025 defense's best eight-game run beat
+  anything the 2013 group put together.
+
+That is a real distinction, not a dodge: 2013 was relentless for a whole year,
+2025 hit a higher peak. Elite either way — just not unprecedented.
+
+*(A note on the yardstick: this defensive comparison runs back to 2010, while
+the all-time rankings elsewhere on the site go back to 1999. The anomaly model
+leans on sack and pressure data that nflverse doesn't record reliably before
+2010, so it gets the shorter window on purpose rather than ranking 2025 against
+seasons where half the inputs don't exist.)*
 """
     )
     st.image(str(OUTPUTS / "defense_anomaly_radar.png"), width="stretch")
     # Three panels in one figure: at half-column width its axis labels are
     # unreadable, so it gets the full column to itself.
     st.image(str(OUTPUTS / "defense_anomaly_historical_rank.png"), width="stretch")
+
+    st.header("The night the season turned")
+    st.markdown(
+        """
+If you want one game, it's **Week 16, Thursday night, Lumen Field, against the
+Rams** — both teams 11–3, the NFC's top seed on the table. Seattle trailed
+**30–14** in the fourth quarter and won **38–37** in overtime. After Los
+Angeles scored to open the extra period, Seattle answered with a nine-play,
+65-yard drive, took the touchdown, and went for two rather than play for
+another possession. The conversion looked incomplete live; on review it was
+ruled a backward pass that had deflected off a Rams defender, and therefore a
+live ball. Good. The Rams are still mad about it.
+
+That one result flipped the conference: Los Angeles slid from the No. 1 seed to
+No. 5, Seattle took the top spot, and every game of the run that followed was
+played at Lumen.
+"""
+    )
+
+    st.header("How the title was actually won")
+    st.markdown(
+        """
+Three games, three very different kinds of win, and the site owes you more than
+a dropdown about them.
+
+**Divisional — Seattle 41, San Francisco 6 (Jan 17, Lumen Field).** The least
+competitive playoff game of the year. Rashid Shaheed took the opening kickoff
+95 yards, it was 17–0 after a quarter, and Seattle never trailed for a single
+second. Kenneth Walker III ran for 116 yards and three touchdowns. San
+Francisco turned it over three times; Seattle not once. Darnold barely had to
+play — 12 of 17, 124 yards.
+
+**NFC Championship — Seattle 31, Los Angeles 27 (Jan 25, Lumen Field).** The
+hard one. Darnold threw three touchdowns and the defense made the stop that
+mattered: McVay and Stafford went for it on fourth-and-4 from the Seattle
+6-yard line late rather than take the points, and the Dark Side kept them out.
+Third meeting of the year with the Rams, third one decided by one score.
+
+**Super Bowl LX — Seattle 29, New England 13 (Feb 8, Levi's Stadium).** Eleven
+years after Super Bowl XLIX, against the same franchise, Seattle got the
+rematch and never made it close. Jason Myers kicked three first-half field
+goals (41, 39, 33) and that was the entire first half — New England did not
+score until the fourth quarter. Seattle sacked Drake Maye six times with eight
+tackles for loss. The clincher: Devon Witherspoon came free on a blitz and hit
+Maye as he threw, Uchenna Nwosu caught the ball out of the air and ran it back
+45 yards, 29–7 with 4:27 to go. (Scorers initially ruled it a strip-sack and
+later changed it to an interception.)
+
+**Kenneth Walker III was the MVP** — 27 carries, 135 rushing yards, 161 yards
+from scrimmage, and the first running back to win the award since Terrell Davis
+in Super Bowl XXXII. Three playoff games, zero Seattle turnovers.
+"""
+    )
 
     st.header("The turnover-free playoff run")
     st.markdown(
@@ -289,6 +386,13 @@ Sam Darnold led the NFL in turnovers during the 2025 regular season — 20
 of them across 17 games. Then, across three playoff games, he committed
 **zero** — the first Super Bowl champion ever to complete an entire
 postseason without one.
+
+How unlikely was that? It depends on how you count his workload. Projecting
+his season turnover rate across three more games puts it at **2.9%, about 1 in
+34**. Counting the 99 dropbacks he actually took in those games puts it at
+**2.2%, about 1 in 46**. Same event, two reasonable denominators — call it
+somewhere between 1 in 35 and 1 in 45. The point is the order of magnitude, not
+the decimal.
 """
     )
     p_zero = turnover["p_zero_turnovers"]["primary_per_dropback"]["p_zero_poisson"]
@@ -313,50 +417,107 @@ improvement.
     st.markdown(
         """
 Across all 32 NFL teams over these two seasons, a team's per-game scoring
-margin is very well explained by two things: offensive efficiency and
-defensive efficiency (per play). Applying that relationship to Seattle
-specifically, the improved offense and improved defense together account for
-essentially the *entire* jump in Seattle's scoring margin from 2024 to 2025.
-Turnover luck, red-zone execution, and pass rush played only minor,
-statistically inconclusive roles by comparison. If anything, the model says
-Seattle's underlying performance jumped by slightly *more* than the record
-shows — the team may have quietly left a little improvement on the table.
+margin tracks two things almost perfectly: offensive efficiency and defensive
+efficiency (per play). Applying that relationship to Seattle, the improved
+offense and improved defense together account for **most** of the jump in
+scoring margin — they predict a 12.8-point swing against the 11.2 points that
+actually happened, leaving about 18% unaccounted for. Turnover luck, red-zone
+execution, and pass rush played only minor, statistically inconclusive roles by
+comparison.
+
+**An honest caveat about that 92%.** This model is better understood as
+accounting than as discovery. EPA is itself built out of expected *points*, so
+regressing point differential on EPA/play is close to circular — a very high
+fit is the floor here, not a finding. What the model is genuinely good for is
+*splitting* the improvement into offense versus defense, not proving that
+efficiency causes winning. Read the chart below as "here is where the margin
+came from," not "here is why they won."
+
+One more wrinkle: the model says Seattle's underlying performance jumped by
+slightly *more* than the record shows — the team may have quietly left a little
+improvement on the table.
 """
     )
     st.image(str(OUTPUTS / "decomposition_waterfall.png"), width="stretch")
     st.image(str(OUTPUTS / "decomposition_feature_importance.png"), width="stretch")
 
-    st.header("Season trend explorer")
-    st.caption("SEA's weekly team features, 2024 vs. 2025 — from `team_week_features.csv`.")
+    st.header("Week by week, 2024 vs. 2025")
     metric_label = st.selectbox("Metric", list(METRIC_OPTIONS.keys()))
     metric_col = METRIC_OPTIONS[metric_label]
     sea = features[features["team"] == "SEA"].copy()
     sea["season"] = sea["season"].astype(str)
-    fig = px.line(
-        sea,
-        x="week",
-        y=metric_col,
-        color="season",
-        markers=True,
-        labels={"week": "Week", metric_col: metric_label, "season": "Season"},
-        color_discrete_map={"2024": "#A5ACAF", "2025": "#69BE28"},
-    )
+
+    # Raw weekly values cross constantly and read as noise; the season level is
+    # the actual claim, so the mean leads and a 4-week mean carries the shape.
+    fig = go.Figure()
+    season_means = {}
+    for season, color in (("2024", "#A5ACAF"), ("2025", "#69BE28")):
+        s = sea[sea["season"] == season].sort_values("week")
+        if s.empty:
+            continue
+        season_means[season] = s[metric_col].mean()
+        fig.add_trace(
+            go.Scatter(
+                x=s["week"],
+                y=s[metric_col],
+                mode="markers",
+                marker=dict(color=color, size=7, opacity=0.35),
+                name=f"{season} weekly",
+                hovertemplate=f"{season} wk %{{x}}: %{{y:.3f}}<extra></extra>",
+                showlegend=False,
+            )
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=s["week"],
+                y=s[metric_col].rolling(4, min_periods=1).mean(),
+                mode="lines",
+                line=dict(color=color, width=3),
+                name=f"SEA {season}",
+                hovertemplate=f"{season} 4-wk avg: %{{y:.3f}}<extra></extra>",
+            )
+        )
+
+    for season, color in (("2024", "#A5ACAF"), ("2025", "#69BE28")):
+        if season in season_means:
+            fig.add_hline(
+                y=season_means[season],
+                line=dict(color=color, width=1, dash="dot"),
+                annotation_text=f"{season} season avg {season_means[season]:.3f}",
+                annotation_position="right",
+                annotation_font_color=color,
+            )
+
     fig.update_layout(
         hovermode="x unified",
-        legend_title_text="Season",
+        xaxis_title="Week",
+        yaxis_title=metric_label,
         plot_bgcolor="#0F1E38",
         paper_bgcolor="#0F1E38",
         font_color="#F5F6F7",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0),
+        margin=dict(r=170),
     )
     fig.update_xaxes(gridcolor="#1C2C48")
     fig.update_yaxes(gridcolor="#1C2C48")
     st.plotly_chart(fig, width="stretch")
 
+    if len(season_means) == 2:
+        gap = season_means["2025"] - season_means["2024"]
+        st.caption(
+            f"Faint dots are single weeks, the solid line is a 4-week rolling average, "
+            f"and the dotted lines are season averages. On **{metric_label}** the gap "
+            f"between the two season averages is **{gap:+.3f}**. Week-to-week lines cross "
+            "constantly in both seasons — single-game swings are mostly noise, and the "
+            "level is what moved. From `team_week_features.csv`."
+        )
+
     st.header("Were they actually all-time great?")
     st.markdown(
         f"""
-Phases 2–7 answered *what changed*. They can't answer *how good was this, historically* —
-that needs a denominator. Measured against all 861 team-seasons since 1999:
+Everything above says *what changed*. None of it says *how good this was by
+historical standards* — for that you need something to measure against.
+Compared with all 861 team-seasons since 1999:
 
 - **Yes, on how games went.** Explosive plays allowed ranked
   {historical["metrics"]["def_explosive_rate_allowed"]["rank_of_n"][0]} of 861;
@@ -366,7 +527,7 @@ that needs a denominator. Measured against all 861 team-seasons since 1999:
 - **No, on taking the ball away.** Full-season turnover margin was
   {historical["metrics"]["turnover_margin"]["sea_2025_value"]:+.0f} — about average — and
   three-and-outs forced were ordinary too.
-- **14–3 was exactly what that quality predicts — and still mostly luck of the draw.**
+- **14–3 was not a fluke — but a 17-game season is a small sample.**
   Replaying the season {counterfactual["methodology"]["n_simulations"]:,} times makes 14
   wins the single most likely outcome, but only at
   {counterfactual["monte_carlo"]["win_distribution"]["14"]:.0f}%; the 90% range runs
@@ -381,15 +542,15 @@ The full breakdown, with the published claims tested one by one, is on the
     st.header("The honest caveats")
     st.markdown(
         """
-- The 2025 defense is elite, not literally the best ever — a claim the
-  data didn't support once tested, so the framing was changed rather than
-  keeping the more dramatic (and wrong) version.
+- The 2025 defense is elite, not literally the best ever. The "best defense
+  in history" version of this story is more fun and does not survive contact
+  with the data.
 - Not every underlying stat improved: red-zone TD% and pressures created
   both dipped slightly — the turnaround was concentrated in specific
   things, not a uniform team-wide leap.
-- "1 in 34" comes from a model built on one player's one season, not a law
-  of nature — a different reasonable modeling choice could plausibly land
-  in the 2–4% range. The point is the order of magnitude: genuinely
+- The playoff turnover odds come from a model built on one player's one
+  season, not a law of nature — other reasonable modeling choices land
+  anywhere in the 2–4% range. The point is the order of magnitude: genuinely
   improbable, not "he just got a little lucky."
 - Both 2024 and 2025 show Seattle winning slightly more games than its
   scoring margin alone would predict — a recurring team characteristic,
@@ -403,7 +564,8 @@ The full breakdown, with the published claims tested one by one, is on the
 with tab_alltime:
     st.caption(
         "Every number on this tab is measured against all 861 team-seasons since 1999 — "
-        "the denominator the rest of this project doesn't have."
+        "so a rank here means 'out of every team-season in the modern record', not "
+        "'out of 2025'."
     )
 
     hm = historical["metrics"]
@@ -430,14 +592,26 @@ with tab_alltime:
         "Best 8-game defensive stretch (EPA/play)",
         f"{streak['garbage_time_filtered']['sea_2025_best_window']:.3f}",
         f"Rank {streak['garbage_time_filtered']['sea_2025_rank_of_n'][0]} of "
-        f"{streak['garbage_time_filtered']['sea_2025_rank_of_n'][1]} since 1999",
+        f"{streak['garbage_time_filtered']['sea_2025_rank_of_n'][1]} "
+        f"(rank {streak['unfiltered']['sea_2025_rank_of_n'][0]} unfiltered)",
         delta_color="off",
     )
     k4.metric(
-        "Seasons that reach 14+ wins",
+        "Replays reaching 14+ wins",
         f"{mc['pct_of_seasons_at_least_14_wins']:.0f}%",
-        f"Across {counterfactual['methodology']['n_simulations']:,} replays",
+        f"Exactly 14 wins: {mc['win_distribution']['14']:.0f}%",
         delta_color="off",
+    )
+
+    st.caption(
+        "The 8-game stretch is shown on the garbage-time-filtered basis, which is the "
+        "harsher test for a dominant defense (it spends more snaps in garbage time "
+        "precisely because it is winning). Without that filter the same stretch ranks "
+        f"{streak['unfiltered']['sea_2025_rank_of_n'][0]} of "
+        f"{streak['unfiltered']['sea_2025_rank_of_n'][1]} instead of "
+        f"{streak['garbage_time_filtered']['sea_2025_rank_of_n'][0]}. Both bases agree it "
+        "beat the 2013 Legion of Boom's best stretch; the gap between them is a reminder "
+        "that a single filter choice moves this number a long way."
     )
 
     st.divider()
@@ -445,6 +619,12 @@ with tab_alltime:
     st.header("Were they actually all-time great?")
     st.markdown(
         f"""
+Two terms, defined once so the rest reads cleanly. An **explosive play** is a pass of 15+
+yards or a run of 10+. **Clock-weighted lead** is the lead Seattle held averaged over every
+second of the season, so a 10-point lead held for three quarters counts for far more than
+the same 10 points scored at the final whistle — it measures control, not just the final
+scoreboard.
+
 On the measures that describe **how games went**, yes, emphatically. Seattle gave up
 explosive plays at a rate bettered by only
 **{hm["def_explosive_rate_allowed"]["rank_of_n"][0] - 1} team-seasons since 1999**, and held
@@ -462,7 +642,7 @@ This team won by never letting anything big happen, not by generating chaos.
 """
     )
 
-    st.subheader("Metric explorer")
+    st.subheader("Pick a metric, see where 2025 lands")
     st.caption(
         "Pick a metric to see the full 1999–2025 distribution. Grey is every other "
         "team-season; green is SEA 2025."
@@ -514,7 +694,7 @@ This team won by never letting anything big happen, not by generating chaos.
         "league. Where they disagree, the era-adjusted number is the honest one."
     )
 
-    st.subheader("Game explorer")
+    st.subheader("Game by game")
     st.caption(
         "Win probability through each of Seattle's 20 games — the nflverse model, "
         "not a betting line."
@@ -674,7 +854,7 @@ So the record was not a fluke: 14–3 is exactly what this team's quality predic
 simulation is *built from* their +191 differential rather than doubting it. The point is
 the width. The same team, playing the same seventeen opponents, lands on 12–5 about as
 often as on 15–2. A season is a small sample, and three losses by nine total points is
-what the favourable side of that noise looks like — not a different, worse team.
+what the favorable side of that noise looks like — not a different, worse team.
 """
     )
 
@@ -692,7 +872,7 @@ with tab_players:
 
     st.caption(
         f"Ranked against {n_receiver_seasons:,} receiver-seasons and every quarterback "
-        "season since 1999 — measured, not asserted."
+        "season since 1999."
     )
 
     p1, p2, p3, p4 = st.columns(4)
@@ -726,16 +906,27 @@ with tab_players:
     st.header("Jaxon Smith-Njigba did more with less than anyone on record")
     st.markdown(
         f"""
-Smith-Njigba led the NFL in receiving yards, won Offensive Player of the Year and was a
-unanimous first-team All-Pro. He is only the second Seahawk ever to lead the league in
-receiving, after Steve Largent, and the second to win the award, after Shaun Alexander in
-2005. He broke the franchise single-season record by 490 yards.
+Remember the setup. Seattle released Tyler Lockett and traded DK Metcalf in the same week
+of March 2025, which left a 22-year-old who had never been a No. 1 receiver as the only
+real threat on the roster. Defenses knew it. He went out and led the NFL in receiving
+yards anyway, won Offensive Player of the Year, and was a unanimous first-team All-Pro.
+The franchise record he broke, by 490 yards, belonged to Metcalf.
+
+He is only the second Seahawk ever to lead the league in receiving, after Steve Largent,
+and the second to win the award, after Shaun Alexander in 2005.
 
 The number that separates him from everyone else is not the yardage. It is the yardage set
 against how rarely his offense threw. Measured as receiving yards per team pass attempt,
 his {jsn_rank["yards_per_team_pass_attempt"]["value"]:.2f} is **first among all
 {n_receiver_seasons:,} receiver-seasons since 1999** — ahead of Steve Smith's 2005, and
 ahead of every thousand-yard season by anyone else in the window.
+
+**One caveat worth putting right here rather than burying it.** That measure divides by
+team pass attempts, and Seattle's pass attempts were low partly *because* Smith-Njigba was
+so productive — the offense led, so it ran the ball. Cause and effect run both directions,
+which flatters the stat. On measures that don't have that problem he is 6th on target
+share and 53rd on yards per target. First on this one, excellent but not unprecedented on
+the others. All three are in the table below.
 """
     )
 
@@ -759,11 +950,11 @@ ahead of every thousand-yard season by anyone else in the window.
         "nflverse publishes from 2006 — hence the shorter window on that row only."
     )
 
-    st.subheader("The 566 barrier")
+    st.subheader("Nobody has ever done this much with this little")
     st.markdown(
         f"""
 The published version of this story is that every receiver with a bigger season had far
-more volume to work with. That is checkable rather than repeatable on faith, and it holds
+more volume to work with. It holds up
 exactly: **{barrier["computed"]["n_receiver_seasons_above"]} receiver-seasons since 1999
 gained more than {jsn["season"]["receiving_yards"]:,} yards, and the fewest team pass
 attempts any of them had was
@@ -780,11 +971,17 @@ Darnold led the NFL in turnovers in 2025 with {darnold["career"][-2]["turnovers"
 played three playoff games and committed none.
 
 The usual telling is that he settled down as the year went on. The career record says
-something better than that. **2025 was the worst turnover rate of his entire career** —
-{100 * darnold["career_arc"]["worst_rate_per_dropback"]:.2f} per 100 dropbacks, worse than
-his rookie year with the Jets, worse than any of the seasons that got him labelled a bust.
-He did not gradually clean it up and peak. He was at his most careless, and then he stopped
-entirely for a month.
+something better than that. **2025 was the highest turnover rate of his career** —
+{100 * darnold["career_arc"]["worst_rate_per_dropback"]:.2f} per 100 dropbacks, nominally
+above his rookie year with the Jets and above any of the seasons that got him labeled a
+bust.
+
+Treat "highest ever" loosely: the gap over his 2018 rookie season is 0.17 per 100 on about
+500 dropbacks, which is a coin-flip's worth of difference (95% interval on the gap runs
+from −2.2 to +2.6). The defensible claim is not that 2025 was uniquely bad, but that it was
+**no better than his worst years** — which is still the opposite of a player who gradually
+cleaned things up. He was as careless as he had ever been, and then he stopped entirely for
+a month.
 """
     )
     st.image(str(OUTPUTS / "players_darnold_career.png"), width="stretch")
@@ -804,7 +1001,13 @@ entirely for a month.
         f"~1 in {darnold['clean_postseason']['odds_against_1_in']:.0f}",
         delta_color="off",
     )
-    st.caption(darnold["clean_postseason"]["caveat"])
+    st.caption(
+        darnold["clean_postseason"]["caveat"]
+        + " This figure counts the 99 dropbacks he actually took in the playoffs; the "
+        "Story tab's 1-in-34 instead projects his season rate across three more games. "
+        "Both are reasonable, which is why the honest answer is a range rather than a "
+        "single number."
+    )
 
     st.subheader("The career, season by season")
     raw_career = pd.DataFrame(darnold["career"])
@@ -857,8 +1060,8 @@ Murphy recorded **{leap["prior_sacks"]:g} sacks as a rookie in {leap["prior_seas
 {leap["season"]} he recorded **{leap["sacks"]:g}**, tied for the team lead on the NFL's
 best scoring defense.
 
-A raw jump flatters anyone who simply played more, so it is worth a denominator: measured
-against every pair of consecutive seasons by the same player for the same team since 1999,
+A raw jump flatters anyone who simply played more, so it needs something to be measured
+against: every pair of consecutive seasons by the same player for the same team since 1999,
 a **+{leap["jump"]:g} sack increase ranks {leap["rank_of_n"][0]} of
 {leap["rank_of_n"][1]:,}** — inside the top {100 - leap["percentile"]:.1f}% of
 year-over-year jumps by any defender.
@@ -978,18 +1181,17 @@ Mike Macdonald had the same job and most of the same players in 2024, when Seatt
         f"{n_team_seasons} team-seasons since 1999."
     )
 
-    st.header("Seventeen defenders got a hand on the ball")
+    st.header("The disruption came from everywhere, not from one star")
     st.markdown(
         f"""
 The pass rush was not the only thing spread across the roster. Seattle broke up
-**{disruption["team_passes_defensed"]} passes** and intercepted
-**{disruption["team_interceptions"]}** more, and
-**{disruption["distinct_defenders_with_a_breakup"]} different players** recorded a
-breakup — the same shape as the sack chart, in coverage rather than on the rush.
+**{disruption["team_passes_defensed"]} passes** and added
+**{disruption["team_interceptions"]} interceptions** on top of that, with
+**{disruption["distinct_defenders_with_a_breakup"]} different players** recording at least
+one breakup — the same shape as the sack chart, in coverage rather than on the rush.
 
-The leader in interceptions was an off-ball linebacker. Ernest Jones IV took five of
-them, more than any defensive back on the roster, and returned one 85 yards for a
-touchdown.
+The leader in interceptions was not a cornerback or a safety at all. Ernest Jones IV, an
+off-ball linebacker, took five of them and returned one 85 yards for a touchdown.
 """
     )
     disruption_df = pd.DataFrame(disruption["leaders"]).rename(
@@ -1006,13 +1208,18 @@ touchdown.
         "disruption rather than how often a player was thrown at."
     )
 
-    st.header("The run game had a favourite direction")
+    st.header("They ran left most, and ran right best")
     st.markdown(
         f"""
 Seattle ran the ball more than almost anyone, and it ran it best to the right:
 **{run_game["by_direction"]["right"]["yards_per_carry"]:.2f} yards per carry**, fifth in the
 NFL, against {run_game["by_direction"]["left"]["yards_per_carry"]:.2f} to the left on more
-than a third more carries.
+than a third more carries. The obvious objection is "so why keep running left?" — and the
+honest answer is that this table can't settle it. Run direction isn't chosen at random:
+short-yardage and goal-line carries behind the rookie left guard are exactly the runs that
+produce low yards per carry *by design*, and defenses tilt toward the side they expect.
+A clean answer would need play-level down, distance and box-count controls, which this
+split doesn't have. Read it as a description of what happened, not as a coaching error.
 
 On the other side of it, the run defense was the best in football by some distance.
 Opponents managed {run_game["metrics"]["def_rush_epa_allowed"]["value"]:.3f} expected points
@@ -1034,7 +1241,7 @@ per rush against Seattle — **1st in the league**, and
     )
     st.dataframe(direction_df, width=NARROW_TABLE, hide_index=True)
 
-    st.header("Mike Macdonald")
+    st.header("The coach who called it himself")
     st.markdown(
         """
 Macdonald is the first head coach in NFL history to win a Super Bowl while calling his own
@@ -1069,10 +1276,10 @@ with tab_method:
     st.markdown(
         """
 Play-by-play, schedule, and player-stat data come from `nflverse` via
-`nflreadpy` (CC-BY-4.0). Coverage widens by phase: 2024–2025 for the
-2024→2025 comparison (Phases 2–7), 2010–2025 for the defense anomaly
-baseline (Phase 5), and **1999–2025 — 861 team-seasons — for the
-all-time comparisons** (Phases 13–16), which is as far back as nflverse
+`nflreadpy` (CC-BY-4.0). Coverage widens with the question being asked:
+2024–2025 for the season-over-season comparison, 2010–2025 for the defense
+anomaly baseline, and **1999–2025 — 861 team-seasons — for the
+all-time comparisons**, which is as far back as nflverse
 publishes EPA and win probability. Regular-season games only, unless noted.
 
 Two things in the published coverage of this team **cannot** be reproduced
@@ -1126,7 +1333,7 @@ pressure rate.
     personnel_df.index.name = ""
     st.dataframe(personnel_df, width=NARROW_TABLE)
 
-    st.header("Engineered features (Phase 4)")
+    st.header("Engineered features")
     st.markdown(
         """
 Team-week features from play-by-play: offensive/defensive EPA per play
@@ -1153,7 +1360,7 @@ time excluded), turnover margin, red-zone TD rate, and pressure rate.
     sea_season_avg.index.name = ""
     st.dataframe(sea_season_avg, width=NARROW_TABLE)
 
-    st.header("Defense anomaly detection (Phase 5)")
+    st.header("Defense anomaly detection")
     meth = defense["methodology"]
     st.markdown(
         f"""
@@ -1164,10 +1371,20 @@ each season** before pooling across years, signs oriented so higher = better
 defense. Mahalanobis distance and an Isolation Forest were run as
 cross-checks on top of the composite z-score.
 
-Both cross-checks agree with the headline number: the 2025 defense ranks
-**129th of 261** good-direction team-seasons by Mahalanobis distance, and
-sits at the **65.8th percentile** on the Isolation Forest anomaly score —
-elite, but not off-the-charts by either measure.
+The cross-checks do **not** reproduce the headline percentile, and that is worth
+stating plainly rather than glossing. The composite z-score puts 2025 at the
+**91.8th percentile** (rank 43 of 512). Mahalanobis distance puts it at the
+**53.7th** (129th of 261 good-direction team-seasons), and the Isolation Forest
+at the **65.8th**.
+
+What the three agree on is the *qualitative* claim — elite, not off the charts —
+and they disagree on how elite. The gap is informative rather than alarming:
+the composite z-score rewards being good on all four metrics at once, while
+Mahalanobis explicitly down-weights correlated metrics (EPA allowed and points
+allowed move together) and rewards being *unusual* rather than *good*. A team
+that is excellent in an ordinary shape will rank high on the first and middling
+on the second, which is exactly what happens here. Treat the 91.8th percentile
+as the headline and the other two as evidence against over-claiming.
 """
     )
     DEFENSE_ROWS = {
@@ -1223,7 +1440,7 @@ elite, but not off-the-charts by either measure.
     )
     st.dataframe(top10_df, width=NARROW_TABLE, hide_index=True)
 
-    st.header("Turnover rate model (Phase 6)")
+    st.header("Turnover rate model")
     st.markdown(turnover["framing"]["not_extreme_value_theory"])
     st.markdown(
         f"""
@@ -1277,11 +1494,11 @@ surprising, not less.
     sensitivity_df.index.name = ""
     st.dataframe(sensitivity_df, width="stretch")
 
-    st.header("Regression decomposition (Phase 7)")
+    st.header("Regression decomposition")
     ols = decomp["ols_point_diff_per_game"]
     st.markdown(
         f"""
-OLS of point differential/game on six standardized Phase 4 features, across
+OLS of point differential/game on the six standardized team features, across
 32 teams × 2 seasons (n={ols["n"]}). **R² = {ols["r2"]:.3f}**
 (adjusted {ols["r2_adj"]:.3f}). Linear regression was used deliberately
 instead of a gradient-boosted model with SHAP: at n={ols["n"]}, a tree
@@ -1331,13 +1548,13 @@ to **{sea_decomp["sea_point_diff_per_game_2025"]:.2f}**
     per_feature_df.index.name = ""
     st.dataframe(per_feature_df, width="stretch")
 
-    st.header("Historical baseline (Phase 13)")
+    st.header("Historical baseline")
     st.markdown(
         f"""
 `src/season_metrics.py` builds one row per team-season for **1999–2025** and commits it
 as `data/processed/team_season_advanced.csv`, so nothing downstream needs the raw
-play-by-play. EPA and success rate reuse Phase 4's exact core-play filter (downs 1–4,
-pass/run, win probability 5–95%) so the numbers stay comparable to the earlier phases.
+play-by-play. EPA and success rate reuse the same core-play filter used throughout (downs 1–4,
+pass/run, win probability 5–95%) so every number on the site stays comparable.
 
 Every metric is reported at **two percentiles**: raw, and era-adjusted via a
 within-season z-score. The NFL's scoring environment moved substantially across this
@@ -1362,7 +1579,7 @@ Reference set: **{historical["methodology"]["n_team_seasons_reg"]} regular seaso
     )
     st.dataframe(claims_df, width="stretch", hide_index=True)
 
-    st.header("Game control (Phase 14)")
+    st.header("Game control")
     st.markdown(
         f"""
 Clock-weighted margin is `sum(margin_after_play × seconds_until_next_play) / total_seconds`.
@@ -1379,7 +1596,7 @@ figure was 2nd. On the clock-weighted version it ranks
     )
     st.image(str(OUTPUTS / "game_control_season_arc.png"), width="stretch")
 
-    st.header("Defense deep dive (Phase 15)")
+    st.header("Defense deep dive")
     st.markdown(
         f"""
 The published claim — a best-in-25-years eight-week stretch at −0.34 EPA/play — is tested
@@ -1400,7 +1617,7 @@ which spends more snaps in garbage time precisely because it is dominant.
     )
     st.image(str(OUTPUTS / "defense_rolling_epa.png"), width="stretch")
 
-    st.header("Counterfactual (Phase 16)")
+    st.header("Counterfactual")
     cf_model = counterfactual["methodology"]["margin_model_fit"]
     st.markdown(
         f"""
@@ -1429,7 +1646,7 @@ Seattle's turnover margin from **{tl["actual_turnover_margin"]:+d}** to
 """
     )
 
-    st.header("Player deep dives (Phase 17)")
+    st.header("Player deep dives")
     st.markdown(
         f"""
 `season_metrics.py` emits one row per player-season for 1999–2025. The receiver
@@ -1440,8 +1657,9 @@ reference set is every regular season with 50+ targets —
 fires on sacks and two-point conversion passes; left alone it gives SEA 2025 510 attempts
 against the league's official 481. Removing both lands on exactly 481, which puts
 Smith-Njigba's target share on 33.9% and his share of team receiving yards on 44.1% —
-reproducing the published figures rather than inventing a third set. Three different
-denominators are already circulating in public coverage of this season.
+matching the official figures. Three different pass-attempt counts are already
+circulating in public coverage of this season, so the one used here is the one that
+reconciles to the league's.
 
 **A silent trap, guarded.** nflverse ships two receiver keys. `receiver_player_id` is null
 on *incomplete* passes for 2003–2008 — 0.7% populated there against 80%+ for `receiver_id` —
@@ -1451,15 +1669,15 @@ window's catch rate ever drifts.
 
 **Opportunity is a proxy.** Target share is measured over team pass attempts. The stricter
 denominator would be routes run, which no public play-by-play carries, so this measure
-slightly favours a receiver who never leaves the field. It is the same measure the
+slightly favors a receiver who never leaves the field. It is the same measure the
 published figures use.
 
-**Darnold's turnovers are counted over every snap he touched**, not only dropbacks. Phase 6
+**Darnold's turnovers are counted over every snap he touched**, not only dropbacks. The turnover model
 established that one of his 20 giveaways in 2025 was an aborted snap coded as a run;
 restricting the numerator to dropbacks returns 19 and disagrees with every published total.
 The rate keeps dropbacks as its denominator, which makes it slightly conservative.
 
-**Rankings rather than probabilities, for the receiving season.** Phase 6's Poisson works
+**Rankings rather than probabilities, for the receiving season.** The turnover model's Poisson works
 because turnovers are rare, discrete, near-independent events. Receiving yards are none of
 those, and pass volume is jointly determined with the production it would be conditioning
 on — Seattle ran because it led, and led partly because Smith-Njigba produced. The surprise
@@ -1469,7 +1687,7 @@ stated reference set are reported instead.
 """
     )
 
-    st.header("Coach and scheme (Phase 18)")
+    st.header("Coach and scheme")
     st.markdown(
         f"""
 Sacks are counted with **half-credits**, because `sack_player_id` alone misses roughly a
@@ -1497,9 +1715,10 @@ and 1999–2002 about half the modern rate, so the `sack OR qb_hit` proxy degrad
 bare sack rate in those years. Ranking 2025 against all 861 team-seasons compared it
 against seasons where half the metric did not exist.
 
-**Cited, not computed.** Records, awards and voting margins throughout Phases 17–18 come
-from published reporting and are listed under `external_context_not_computed` in each
-phase's output JSON — the same treatment DVOA and blitz rate get. That covers the OPOY
+**Cited, not computed.** Records, awards and voting margins on the Players and
+Coach & Scheme tabs come from published reporting and are listed under
+`external_context_not_computed` in the relevant
+output JSON — the same treatment DVOA and blitz rate get. That covers the OPOY
 vote, All-Pro selections, Macdonald's play-calling and coaching records, Baltimore's 2023
 league lead, and games started, which no play-by-play records.
 """
@@ -1508,7 +1727,7 @@ league lead, and games started, which no play-by-play records.
     st.header("Limitations")
     st.markdown(
         """
-- Phase 4–7's EPA/play features are aggregated with equal weight per game,
+- The team EPA/play features are aggregated with equal weight per game,
   not weighted by play volume within a season; red-zone TD% and pressure
   rates are instead computed from summed season counts (not an average of
   weekly percentages), so uneven weekly sample sizes don't distort the rate.
@@ -1523,7 +1742,7 @@ league lead, and games started, which no play-by-play records.
   coverage, not by when the NFL got interesting. "All-time" throughout this
   project means "since 1999," and the 1985 Bears and 1972 Dolphins are
   simply not in the comparison set.
-- Phase 16's Monte Carlo assumes games are independent and uses full-season
+- The Monte Carlo replay assumes games are independent and uses full-season
   ratings, so it measures the variance in a 17-game sample rather than
   forecasting anything.
 """

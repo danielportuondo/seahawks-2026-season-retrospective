@@ -73,12 +73,14 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.lines import Line2D
 from sklearn.ensemble import IsolationForest
 
 from chart_style import (
     ACTION_GREEN,
     ALERT_RED,
     OFF_WHITE,
+    PANEL,
     WOLF_GREY,
     apply_scoreboard_style,
     fig_size,
@@ -291,33 +293,64 @@ def row_for(df: pd.DataFrame, season: int, team: str = FOCUS_TEAM) -> pd.Series:
 
 
 def radar_chart(df: pd.DataFrame, path: Path) -> None:
+    """2024 -> 2025 per metric as a dumbbell.
+
+    Was a radar. A polar plot of two near-identical quadrilaterals spends half a
+    screen to say "2025 is further out on all four", and area on a radar scales
+    as the square of the value, which overstates every gap. A dumbbell puts both
+    seasons on one shared linear axis where the gap *is* the story.
+    """
     apply_scoreboard_style()
-    angles = np.linspace(0, 2 * np.pi, len(METRICS), endpoint=False).tolist()
-    closed = angles + angles[:1]
+    sea24, sea25 = (row_for(df, s) for s in FOCUS_SEASONS)
 
-    fig, ax = plt.subplots(figsize=fig_size(6.2), subplot_kw={"projection": "polar"})
-    for season, color in zip(FOCUS_SEASONS, [WOLF_GREY, ACTION_GREEN]):
-        row = row_for(df, season)
-        values = [row[z_col(m)] for m in METRICS]
-        values += values[:1]
-        ax.plot(closed, values, color=color, linewidth=2, label=f"SEA {season}")
-        ax.fill(closed, values, color=color, alpha=0.18)
-
-    ax.plot(closed, [0] * len(closed), color=WOLF_GREY, linewidth=1, linestyle="--")
-    ax.set_xticks(angles)
-    ax.set_xticklabels([METRIC_LABELS[m] for m in METRICS], fontsize=9)
-    ax.set_ylim(-2.5, 3.5)
-    ax.set_yticks([-2, -1, 0, 1, 2, 3])
-    ax.set_yticklabels(["-2", "-1", "0 (avg)", "+1", "+2", "+3"], fontsize=8)
-    ax.set_rlabel_position(45)
-    ax.set_title(
-        "Seahawks defense, within-season z-scores\n(outward = better defense; dashed ring = league average)",
-        fontsize=12,
-        pad=24,
+    # Biggest mover on top: the eye lands on the longest bar first.
+    ordered = sorted(
+        METRICS, key=lambda m: sea25[z_col(m)] - sea24[z_col(m)]
     )
-    # A polar axes sizes its circle off the shorter dimension, so a wide figure
-    # leaves the flanks empty -- the legend belongs there, not over the plot.
-    ax.legend(loc="upper left", bbox_to_anchor=(-0.02, 1.02))
+    y = np.arange(len(ordered))
+
+    fig, ax = plt.subplots(figsize=fig_size(3.6))
+    ax.axvline(0, color=WOLF_GREY, linewidth=1, linestyle="--", zorder=1)
+
+    for i, metric in enumerate(ordered):
+        v24, v25 = sea24[z_col(metric)], sea25[z_col(metric)]
+        ax.plot(
+            [v24, v25], [i, i], color=OFF_WHITE, linewidth=2, alpha=0.35, zorder=2,
+            solid_capstyle="round",
+        )
+        # 2px surface ring so the dots stay separable where they nearly touch.
+        ax.scatter(
+            [v24, v25], [i, i], s=150, zorder=3,
+            c=[WOLF_GREY, ACTION_GREEN], edgecolors=PANEL, linewidths=2,
+        )
+        # Direct labels are the secondary encoding: identity never rests on hue.
+        for val, color, season in ((v24, WOLF_GREY, 2024), (v25, ACTION_GREEN, 2025)):
+            ax.annotate(
+                f"{val:+.2f}",
+                xy=(val, i),
+                xytext=(0, 13 if season == 2025 else -20),
+                textcoords="offset points",
+                ha="center",
+                fontsize=9,
+                color=OFF_WHITE,
+            )
+
+    ax.set_yticks(y)
+    ax.set_yticklabels([METRIC_LABELS[m].replace("\n", " ") for m in ordered], fontsize=10)
+    ax.set_xlabel("Within-season z-score (higher = better defense; 0 = league average)")
+    ax.set_xlim(-1.2, 2.6)
+    ax.set_ylim(-0.6, len(ordered) - 0.4)
+    ax.grid(axis="x", alpha=0.3)
+    ax.grid(axis="y", visible=False)
+    ax.set_title("The defense improved on three of four measures — the pass rush slipped")
+
+    handles = [
+        Line2D([], [], marker="o", linestyle="", markersize=11, markerfacecolor=c,
+               markeredgecolor=PANEL, markeredgewidth=2, label=f"SEA {s}")
+        for c, s in ((WOLF_GREY, 2024), (ACTION_GREEN, 2025))
+    ]
+    ax.legend(handles=handles, loc="lower right", framealpha=0.95)
+
     fig.tight_layout()
     fig.savefig(path, dpi=150)
     plt.close(fig)
