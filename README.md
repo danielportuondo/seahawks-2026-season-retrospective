@@ -12,6 +12,11 @@ decomposition).
 
 ## Dashboard
 
+**Live: https://seahawks-super-bowl-lx-retrospective.streamlit.app/**
+
+Hosted on Streamlit Community Cloud, which sleeps an idle app after about a
+week — the first visit after that takes ~30 seconds to wake.
+
 ![Dashboard screenshot](docs/dashboard_screenshot.png)
 
 A five-tab Streamlit app:
@@ -22,9 +27,10 @@ A five-tab Streamlit app:
   since 1999. Interactive metric explorer, per-game win-probability curves,
   and a champion comparison you can re-rank between the published statistic
   and the clock-weighted version.
-- **Players** — Jaxon Smith-Njigba against all 3,504 receiver-seasons since
-  1999 (first all-time in receiving yards per team pass attempt), and Sam
-  Darnold's full career turnover arc across five franchises.
+- **Players** — Jaxon Smith-Njigba against every qualifying receiver-season
+  since 1999 (3,504 of them, at 50+ targets; he is first in receiving yards
+  per team pass attempt), and Sam Darnold's full career turnover arc across
+  five franchises.
 - **Coach & Scheme** — how Seattle's sacks were distributed, the 2024→2025
   change in the same defensive unit, and an explicit list of what this data
   cannot say about Mike Macdonald's scheme.
@@ -43,7 +49,8 @@ Reads only from `outputs/` and `data/processed/` — no live recomputation.
 
 - `data/raw/` — cached raw pull from nflverse (not committed; re-fetchable via `src/data_acquisition.py`)
 - `data/processed/` — engineered feature files used by later analysis and the dashboard (team-season tables plus per-receiver, per-passer, per-defender and per-rusher season tables)
-- `src/` — pipeline and analysis code, one script per phase
+- `src/` — pipeline and analysis code: one script per phase, plus shared
+  modules (`pythagorean.py`, `season_metrics.py`, `chart_style.py`)
 - `outputs/` — analysis results (JSON) and charts
 - `dashboard/` — Streamlit app (`app.py`)
 - `tests/` — unit tests for the pure calculation functions (Pythagorean expectation, turnover-probability model, OLS decomposition, clock-weighted margin / percentile / rolling-window / concentration kernels, plus fixture tests guarding the player-frame denominators)
@@ -53,12 +60,16 @@ Reads only from `outputs/` and `data/processed/` — no live recomputation.
 
 ## Setup
 
-Requires Python 3.12+.
+Requires Python 3.12+ (`.python-version` pins 3.12, which is also what the
+deployed app builds against).
 
 ```bash
 uv venv
 uv pip install -r requirements.txt
 ```
+
+`requirements.txt` is runtime-only. Test tooling lives in
+`requirements-dev.txt` — see [Tests and lint](#tests-and-lint).
 
 ## Running the pipeline
 
@@ -91,10 +102,9 @@ Phases 13–18 all read `season_metrics.py`'s committed CSVs, so once those exis
 the six can run in any order. `season_metrics.py` is the only module that opens
 raw play-by-play; it emits the team tables plus four player-level tables
 (`receiver_season.csv`, `passer_season.csv`, `defender_season.csv`,
-`rusher_season.csv`) that Phases 17–18 read. Note that `data_acquisition.py` now pulls
-**1999–2025** rather than 2010–2025 — the first run after this change downloads
-eleven additional seasons of play-by-play (cached per season, so it resumes
-cleanly if interrupted).
+`rusher_season.csv`) that Phases 17–18 read. `data_acquisition.py` pulls
+**1999–2025**, so a first run downloads 27 seasons of play-by-play. It caches
+per season and resumes cleanly if interrupted.
 
 ## Running the dashboard
 
