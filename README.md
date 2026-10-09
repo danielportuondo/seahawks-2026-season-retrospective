@@ -105,6 +105,7 @@ uv run streamlit run dashboard/app.py
 ## Tests and lint
 
 ```bash
+uv pip install -r requirements-dev.txt
 uv run pytest
 uvx ruff check .
 ```
