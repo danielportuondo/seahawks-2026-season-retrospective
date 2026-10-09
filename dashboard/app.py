@@ -1331,6 +1331,9 @@ pressure rate.
         pd.DataFrame(personnel).loc[list(PERSONNEL_ROWS)].rename(index=PERSONNEL_ROWS)
     )
     personnel_df.index.name = ""
+    # Rows mix names and counts, so the column has no single Arrow type;
+    # Streamlit would coerce to str anyway and log a traceback doing it.
+    personnel_df = personnel_df.astype(str)
     st.dataframe(personnel_df, width=NARROW_TABLE)
 
     st.header("Engineered features")
@@ -1358,6 +1361,8 @@ time excluded), turnover margin, red-zone TD rate, and pressure rate.
         .T
     )
     sea_season_avg.index.name = ""
+    # Transposing leaves int season labels as column names; Arrow needs str.
+    sea_season_avg.columns = sea_season_avg.columns.astype(str)
     st.dataframe(sea_season_avg, width=NARROW_TABLE)
 
     st.header("Defense anomaly detection")
